@@ -1,0 +1,43 @@
+---
+// Cabeçalho do site Azzaro: navegação fixa + menu (índice dos capítulos).
+// Os ids e classes são usados por site-renovado-azzaro/js/main.js — não renomear.
+import azzaroBranco300 from '../../site-renovado-azzaro/assets/templates/logo/azzaro-branco-responsivo/azzaro-branco-300.webp?url';
+import azzaroBranco600 from '../../site-renovado-azzaro/assets/templates/logo/azzaro-branco-responsivo/azzaro-branco-600.webp?url';
+---
+<!-- Navegação -->
+<header class="nav" id="nav">
+    <nav class="nav-inner" aria-label="Principal">
+        <div class="nav-side nav-left">
+            <a class="nav-link" href="#hero" data-scroll-to="#hero" data-spy="hero">O filme</a>
+        </div>
+        <a class="brand" href="#hero" data-goto="0" aria-label="AZZARO — voltar ao início">
+            <img src={azzaroBranco300}
+                 srcset={`${azzaroBranco300} 300w,
+                         ${azzaroBranco600} 600w`}
+                 sizes="150px" width="300" height="87" alt="AZZARO">
+        </a>
+        <div class="nav-side nav-right">
+            <a class="nav-link hide-sm" href="#wanted" data-scroll-to="#wanted" data-spy="wanted">A fragrância</a>
+            <span class="nav-sep hide-sm" aria-hidden="true">|</span>
+            <a class="nav-link hide-sm" href="#desejo" data-scroll-to="#desejo" data-spy="desejo">Comprar</a>
+            <span class="nav-sep hide-sm" aria-hidden="true">|</span>
+            <button class="nav-link menu-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="menu">
+                <span class="menu-ico" aria-hidden="true"><i></i><i></i></span>Menu
+            </button>
+        </div>
+    </nav>
+    <div class="nav-progress" aria-hidden="true"><i id="navProgress"></i></div>
+</header>
+
+<!-- Menu: índice dos capítulos do filme -->
+<div class="menu" id="menu" role="dialog" aria-modal="true" aria-label="Índice" hidden>
+    <div class="menu-inner">
+        <p class="t-label menu-kicker">Índice · três atos</p>
+        <ol class="menu-list">
+            <li><a href="#hero" data-goto="0"><span class="t-label">I</span><em>O filme</em></a></li>
+            <li><a href="#wanted" data-scroll-to="#wanted"><span class="t-label">II</span><em>A fragrância</em></a></li>
+            <li><a href="#desejo" data-scroll-to="#desejo"><span class="t-label">III</span><em>O desejo</em></a></li>
+        </ol>
+        <button class="btn-close" id="menuClose" type="button">Fechar <span aria-hidden="true">✕</span></button>
+    </div>
+</div>

@@ -1,11 +1,423 @@
 ---
-import Welcome from '../components/Welcome.astro';
-import Layout from '../layouts/Layout.astro';
+// Página convertida de site-renovado-azzaro/index.html.
+// Os assets são importados da pasta original (?url): o Vite gera as URLs com hash no build.
+import '../../site-renovado-azzaro/css/style.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import Button from '../components/Button.astro';
+import CompositionCard from '../components/CompositionCard.astro';
 
-// Welcome to Astro! Wondering what to do next? Check out the Astro documentation at https://docs.astro.build
-// Don't want to use any of this? Delete everything in this file, the `assets`, `components`, and `layouts` directories, and start fresh.
+import mainJs from '../../site-renovado-azzaro/js/main.js?url';
+import wantedJs from '../../site-renovado-azzaro/js/wanted.js?url';
+import desireJs from '../../site-renovado-azzaro/js/desire.js?url';
+import polishJs from '../../site-renovado-azzaro/js/polish.js?url';
+import favicon from '../../site-renovado-azzaro/assets/templates/logo/favicon_io/favicon.ico?url';
+import favicon32x32 from '../../site-renovado-azzaro/assets/templates/logo/favicon_io/favicon-32x32.png?url';
+import appleTouchIcon from '../../site-renovado-azzaro/assets/templates/logo/favicon_io/apple-touch-icon.png?url';
+import filmVideo from '../../site-renovado-azzaro/assets/video/Azzaro.webm?url';
+import perfumeRecorte600 from '../../site-renovado-azzaro/assets/templates/img/perfume-recorte-600.webp?url';
+import perfumeRecorte300 from '../../site-renovado-azzaro/assets/templates/img/perfume-recorte-300.webp?url';
+import perfumeRecorte1200 from '../../site-renovado-azzaro/assets/templates/img/perfume-recorte-1200.webp?url';
+import perfumeBalas300 from '../../site-renovado-azzaro/assets/templates/img/perfume-balas-300.webp?url';
+import perfumeBalas600 from '../../site-renovado-azzaro/assets/templates/img/perfume-balas-600.webp?url';
+import perfumeBalas1200 from '../../site-renovado-azzaro/assets/templates/img/perfume-balas-1200.webp?url';
 ---
+<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>AZZARO</title>
+    <meta name="description" content="Azzaro Wanted. Não espere chamar a atenção. Faça acontecer. Role para assistir ao filme e descobrir a fragrância.">
+    <meta name="theme-color" content="#050402">
+    <meta name="color-scheme" content="dark">
 
-<Layout>
-	<Welcome />
-</Layout>
+    <!-- Open Graph -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="AZZARO — Não espere chamar a atenção. Faça acontecer">
+    <meta property="og:description" content="Imagine chegar a um lugar e deixar uma impressão impossível de esquecer.">
+    <meta property="og:image" content="assets/templates/img/perfume_azzaro_final.webp_a4d9c1ec.jpg">
+    <meta property="og:image:alt" content="Frasco AZZARO em prata polida diante de uma parede de cartuchos dourados">
+    <meta name="twitter:card" content="summary_large_image">
+
+    <link rel="icon" href={favicon} sizes="any">
+    <link rel="icon" type="image/png" sizes="32x32" href={favicon32x32}>
+    <link rel="apple-touch-icon" href={appleTouchIcon}>
+
+    <!-- Tipografia do Design System: Inter · Instrument Serif · JetBrains Mono -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap">
+
+    <!-- Marca o documento antes do primeiro paint: evita "flash" de conteúdo sem estado inicial -->
+    <script is:inline>document.documentElement.classList.add('js');</script>
+</head>
+<body>
+    <a class="skip-link" href="#hero-title">Pular para o conteúdo</a>
+
+    <!-- Filtro de contorno dourado (mesma técnica #hollow do design_system.html) -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
+        <filter id="hollow" x="-3%" y="-6%" width="106%" height="112%" color-interpolation-filters="sRGB">
+            <feMorphology in="SourceAlpha" operator="dilate" radius="1" result="fat" />
+            <feComposite in="fat" in2="SourceAlpha" operator="out" result="ring" />
+            <feFlood flood-color="#E7CC8C" />
+            <feComposite in2="ring" operator="in" />
+        </filter>
+        <symbol id="cyl" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><circle cx="12" cy="5.8" r="2.5"/><circle cx="17.4" cy="8.9" r="2.5"/><circle cx="17.4" cy="15.1" r="2.5"/><circle cx="12" cy="18.2" r="2.5"/><circle cx="6.6" cy="15.1" r="2.5"/><circle cx="6.6" cy="8.9" r="2.5"/></symbol>
+    </svg>
+
+    <!-- Cortina de abertura (padrão .curtain do Design System). Não bloqueia a rolagem. -->
+    <div class="curtain" id="curtain" aria-hidden="true">
+        <i></i><i></i>
+        <div class="curtain-core">
+            <svg class="curtain-cyl" fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+            <span class="curtain-pct" id="curtainPct">00</span>
+        </div>
+    </div>
+
+    <!-- Navegação + menu (src/components/Header.astro) -->
+    <Header />
+
+    <main>
+        <!-- ÚNICA SEÇÃO: hero cinematográfica. A altura extra é a "pista" do scroll que controla o filme. -->
+        <section class="hero" id="hero" aria-labelledby="hero-title">
+            <div class="stage" id="stage">
+
+                <!-- Filme: protagonista. currentTime é controlado pelo scroll (js/main.js) -->
+                <div class="film" id="film">
+                    <video id="video" class="film-video" muted playsinline preload="auto"
+                           disablepictureinpicture disableremoteplayback aria-hidden="true" tabindex="-1">
+                        <source src={filmVideo} type="video/webm">
+                    </video>
+                    <div class="film-fallback" id="filmFallback" role="img"
+                         aria-label="Frasco AZZARO em prata polida diante de uma parede de cartuchos dourados"></div>
+                </div>
+
+                <!-- Atmosfera: vinhetas, luz do cursor, guias e grão -->
+                <div class="shade shade-left" id="shadeLeft" aria-hidden="true"></div>
+                <div class="shade shade-deep" id="shadeDeep" aria-hidden="true"></div>
+                <div class="shade shade-bottom" aria-hidden="true"></div>
+                <div class="shade shade-top" aria-hidden="true"></div>
+                <div class="hero-light" id="heroLight" aria-hidden="true"></div>
+                <div class="guides" aria-hidden="true"><i></i><i></i><i></i></div>
+                <div class="flash" id="flash" aria-hidden="true"></div>
+
+                <!-- PRÓLOGO: H1 + texto + botões -->
+                <div class="intro" id="intro">
+                    <p class="eyebrow" data-enter>
+                        <span class="eyebrow-rule" aria-hidden="true"></span>
+                        <span class="t-label">AZZARO — Le Film</span>
+                    </p>
+
+                    <h1 class="headline" id="hero-title" lang="pt-BR">
+                        <span class="line l1"><span class="line-in">Não espere</span></span>
+                        <span class="line l2"><span class="line-in"><em>chamar a atenção.</em></span></span>
+                        <span class="line l3"><span class="line-in foil">Faça acontecer</span></span>
+                    </h1>
+
+                    <p class="lede" data-enter lang="pt-BR">
+                        Imagine chegar a um lugar e deixar uma impressão impossível de esquecer.
+                    </p>
+
+                    <div class="actions" data-enter lang="pt-BR">
+                        <Button variant="beam" href="#hero" data-goto="3">Descubra a fragrância</Button>
+                        <Button variant="outline" id="exploreBtn">Navegue na experiência</Button>
+                    </div>
+                </div>
+
+                <div class="scroll-cue" id="scrollCue" aria-hidden="true">
+                    <span class="cue-mouse"><i></i></span>
+                    <span class="t-label">Role para assistir ao filme</span>
+                    <span class="cue-line"><i></i></span>
+                </div>
+            </div>
+        </section>
+
+        <!-- DOBRA II: Azzaro Wanted. Layout: título + dado à esquerda, frasco à direita, faixa de cards na base. -->
+        <section class="wanted" id="wanted" lang="pt-BR" aria-labelledby="wanted-title">
+
+            <!-- Fundo: tambores do DS, feixes de luz, brasa e riscos dourados -->
+            <div class="w-bg" aria-hidden="true">
+                <div class="w-cyl"></div>
+                <div class="w-cyl w-cyl-lit" id="wCylLit"></div>
+                <div class="w-godrays"></div>
+                <div class="w-aurora"></div>
+                <i class="w-streak"></i>
+                <i class="w-streak b"></i>
+            </div>
+
+            <header class="w-top" data-w="top">
+                <p class="t-label w-brand">
+                    <svg class="w-ico-cyl" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><use href="#cyl"></use></svg>
+                    Azzaro Wanted
+                </p>
+                <p class="t-label w-top-mid">Eau de Toilette</p>
+                <p class="t-label w-top-num"><span>II</span> A fragrância</p>
+                <i class="w-top-rule" aria-hidden="true"></i>
+            </header>
+
+            <div class="w-main">
+                <div class="w-copy" id="wCopy">
+                    <p class="badge badge-glass w-kicker" data-w="fade">
+                        <span class="pulse-dot" aria-hidden="true"></span>Pour Homme · Eau de Toilette
+                    </p>
+
+                    <h2 class="w-title" id="wanted-title">
+                        <span class="w-line"><span class="w-line-in">Nascido para</span></span>
+                        <span class="w-line w-line-2"><span class="w-line-in"><em class="foil">se destacar.</em></span></span>
+                    </h2>
+
+                    <div class="w-stat" data-w="fade">
+                        <p class="w-stat-num" aria-hidden="true"><span class="foil" id="wCount">03</span></p>
+                        <p class="w-stat-txt">
+                            <span class="sr-only">Três</span> acordes em uma <strong>única assinatura</strong> —
+                            <span class="w-stat-sub">cítrico · especiado · amadeirado</span>
+                        </p>
+                    </div>
+
+                    <p class="w-lede" data-w="fade">
+                        Uma fragrância feita para homens que nasceram para se destacar. Combina frescor cítrico,
+                        especiarias vibrantes e notas amadeiradas em uma essência <em>marcante, sedutora e cheia de personalidade.</em>
+                    </p>
+
+                    <ul class="w-perks" aria-label="O que Azzaro Wanted provoca">
+                        <li data-w="perk">
+                            <span class="w-perk-ico"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="w-draw" pathLength="60" d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle class="w-draw" pathLength="60" cx="12" cy="12" r="3"/></svg></span>
+                            Desperte olhares
+                        </li>
+                        <li data-w="perk">
+                            <span class="w-perk-ico"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="w-draw" pathLength="60" d="M4 17l-1.2-9.5 5 4 4.2-7 4.2 7 5-4L20 17z"/><path class="w-draw" pathLength="60" d="M4 20.5h16"/></svg></span>
+                            Transmita confiança
+                        </li>
+                        <li data-w="perk">
+                            <span class="w-perk-ico"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true"><path class="w-draw" pathLength="60" d="M2.5 16.5c3-.6 4.2-8.5 7.2-8.5 2.6 0 .6 7.4 3.6 7.4 2.4 0 3-4.6 5.2-4.6 1.4 0 2 1.2 3 2.2"/><path class="w-draw" pathLength="60" d="M3 20.5h18"/></svg></span>
+                            Deixe sua marca por onde passar
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Palco do frasco: tambor giratório, halo, partículas, frasco, reflexo e anotações -->
+                <div class="w-stage" id="wStage">
+                    <div class="w-parallax" id="wParallax">
+                        <div class="w-ring" id="wRing" aria-hidden="true">
+                            <svg viewBox="0 0 400 400" fill="none">
+                                <defs><path id="wRingPath" d="M200,42 a158,158 0 1,1 -0.01,0"/></defs>
+                                <g class="w-ring-spin">
+                                    <circle cx="200" cy="200" r="194" class="r-line"/>
+                                    <circle cx="200" cy="200" r="180" class="r-ticks"/>
+                                    <circle cx="200" cy="200" r="180" class="r-major"/>
+                                    <text class="r-text"><textPath href="#wRingPath" textLength="985" lengthAdjust="spacing">AZZARO WANTED · EAU DE TOILETTE · SEJA IMPOSSÍVEL DE IGNORAR · CÍTRICO · ESPECIADO · AMADEIRADO ·</textPath></text>
+                                </g>
+                                <g class="w-ring-chambers">
+                                    <circle cx="200" cy="200" r="142" class="r-line soft"/>
+                                    <circle cx="200" cy="80" r="34"/><circle cx="303.9" cy="140" r="34"/><circle cx="303.9" cy="260" r="34"/>
+                                    <circle cx="200" cy="320" r="34"/><circle cx="96.1" cy="260" r="34"/><circle cx="96.1" cy="140" r="34"/>
+                                </g>
+                            </svg>
+                        </div>
+                        <div class="w-halo" aria-hidden="true"></div>
+                        <canvas class="w-dust" id="wDust" aria-hidden="true"></canvas>
+
+                        <figure class="w-bottle" id="wBottle">
+                            <div class="w-tilt" id="wTilt">
+                                <img class="w-bottle-img"
+                                     src={perfumeRecorte600}
+                                     srcset={`${perfumeRecorte300} 300w,
+                                             ${perfumeRecorte600} 600w,
+                                             ${perfumeRecorte1200} 1200w`}
+                                     sizes="(max-width: 820px) 92vw, min(52vw, 78svh)"
+                                     width="1200" height="1200" loading="lazy" decoding="async"
+                                     alt="Frasco do Azzaro Wanted Eau de Toilette: metal prateado gravado, tampa em forma de tambor de revólver com cartuchos dourados e o líquido âmbar à vista.">
+                                <span class="w-sheen" aria-hidden="true"></span>
+                            </div>
+                            <img class="w-reflect" src={perfumeRecorte600} width="600" height="600" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                        </figure>
+
+                        <span class="w-callout c1" aria-hidden="true"><i class="dot"></i><i class="lead"></i><span class="t-label">Tambor de revólver</span></span>
+                        <span class="w-callout c2 left" aria-hidden="true"><i class="dot"></i><i class="lead"></i><span class="t-label">Metal gravado</span></span>
+                        <span class="w-callout c3" aria-hidden="true"><i class="dot"></i><i class="lead"></i><span class="t-label">Âmbar luminoso</span></span>
+                    </div>
+                    <div class="w-floor" aria-hidden="true"></div>
+                </div>
+            </div>
+
+            <!-- Faixa de cards: a composição -->
+            <div class="w-cards-wrap">
+                <p class="t-label w-cards-label" data-w="fade"><span class="w-cards-rule" aria-hidden="true"></span>Sua composição · três acordes</p>
+                <ol class="w-cards">
+                    <CompositionCard number="01" tier="Saída" title="Frescor" highlight="cítrico">
+                        <Fragment slot="icon">
+                            <circle class="w-draw" pathLength="60" cx="12" cy="12" r="9.5"/>
+                            <circle class="w-draw" pathLength="60" cx="12" cy="12" r="6.6"/>
+                            <path class="w-draw" pathLength="60" d="M12 5.4v13.2M6.3 8.7l11.4 6.6M6.3 15.3l11.4-6.6"/>
+                        </Fragment>
+                        Sua composição abre com um frescor cítrico luminoso e imediato — a primeira impressão que faz os olhares se voltarem para você.
+                    </CompositionCard>
+                    <CompositionCard number="02" tier="Coração" title="Especiarias" highlight="vibrantes">
+                        <Fragment slot="icon">
+                            <path class="w-draw" pathLength="60" d="M12 2.5L13.38 8.67 18.72 5.28 15.33 10.62 21.5 12 15.33 13.38 18.72 18.72 13.38 15.33 12 21.5 10.62 15.33 5.28 18.72 8.67 13.38 2.5 12 8.67 10.62 5.28 5.28 10.62 8.67Z"/>
+                            <circle class="w-draw" pathLength="60" cx="12" cy="12" r="1.6"/>
+                        </Fragment>
+                        No coração, especiarias vibrantes acendem calor e sedução: um magnetismo que transmite confiança sem pedir licença.
+                    </CompositionCard>
+                    <CompositionCard number="03" tier="Fundo" title="Notas" highlight="amadeiradas">
+                        <Fragment slot="icon">
+                            <path class="w-draw" pathLength="60" d="M12 2.5c5.4 0 9.5 4.1 9.5 9.5s-4.1 9.5-9.5 9.5S2.5 17.4 2.5 12 6.6 2.5 12 2.5z"/>
+                            <path class="w-draw" pathLength="60" d="M12 6.2c3.4 0 5.8 2.5 5.8 5.8s-2.4 5.8-5.8 5.8S6.2 15.3 6.2 12 8.6 6.2 12 6.2z"/>
+                            <circle class="w-draw" pathLength="60" cx="12" cy="12" r="2.2"/>
+                            <path class="w-draw" pathLength="60" d="M12 2.5v5.2"/>
+                        </Fragment>
+                        O fundo amadeirado sustenta o rastro com elegância e personalidade — a marca que permanece muito depois que você passa.
+                    </CompositionCard>
+                </ol>
+            </div>
+
+            <!-- Assinatura em loop -->
+            <div class="w-sign" aria-label="Azzaro Wanted. Seja impossível de ignorar." role="img">
+                <div class="w-marquee" aria-hidden="true">
+                    <div class="w-marquee-track">
+                        <span>Azzaro Wanted.</span><svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                        <em class="foil">Seja impossível de ignorar.</em><svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                        <span class="hollow">Azzaro Wanted.</span><svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                        <em class="foil">Seja impossível de ignorar.</em><svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                    </div>
+                    <div class="w-marquee-track">
+                        <span>Azzaro Wanted.</span><svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                        <em class="foil">Seja impossível de ignorar.</em><svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                        <span class="hollow">Azzaro Wanted.</span><svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                        <em class="foil">Seja impossível de ignorar.</em><svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- DOBRA III: O desejo. Tríptico sobre a parede de cartuchos: título | frasco na mira | compra. -->
+        <section class="desire" id="desejo" lang="pt-BR" aria-labelledby="desire-title">
+
+            <!-- Divisor entre as dobras II e III (DS .section-divider + tambor) -->
+            <div class="sec-divider" id="secDivider" aria-hidden="true">
+                <i></i>
+                <svg fill="none" stroke="currentColor" stroke-width="1"><use href="#cyl"></use></svg>
+                <i></i>
+            </div>
+
+            <!-- Fundo: foto em duas camadas (escura + "iluminada" pelo cursor), mira presa ao frasco -->
+            <div class="d-bg" id="dBg">
+                <img class="d-fill" src={perfumeBalas300} width="300" height="300" alt="" aria-hidden="true" loading="lazy" decoding="async">
+                <div class="d-zoom" id="dZoom">
+                    <img class="d-img"
+                         src={perfumeBalas600}
+                         srcset={`${perfumeBalas300} 300w,
+                                 ${perfumeBalas600} 600w,
+                                 ${perfumeBalas1200} 1200w`}
+                         sizes="(max-width: 900px) 100vw, min(100vw, 125svh)" width="1200" height="1200" loading="lazy" decoding="async"
+                         alt="Frasco prateado da Azzaro com a gravação AZZARO, diante de uma parede de cartuchos dourados.">
+                    <img class="d-img d-img-lit" id="dLit"
+                         src={perfumeBalas600}
+                         srcset={`${perfumeBalas300} 300w,
+                                 ${perfumeBalas600} 600w,
+                                 ${perfumeBalas1200} 1200w`}
+                         sizes="(max-width: 900px) 100vw, min(100vw, 125svh)" width="1200" height="1200" loading="lazy" decoding="async" alt="" aria-hidden="true">
+
+                    <div class="d-reticle" id="dReticle" aria-hidden="true">
+                        <svg viewBox="0 0 400 400" fill="none">
+                            <g class="ret-spin">
+                                <circle cx="200" cy="200" r="196" class="ret-ticks"/>
+                                <circle cx="200" cy="200" r="196" class="ret-major"/>
+                            </g>
+                            <circle cx="200" cy="200" r="176" class="ret-ring" pathLength="1"/>
+                            <circle cx="200" cy="200" r="120" class="ret-ring soft" pathLength="1"/>
+                            <g class="ret-cross">
+                                <path d="M200 4v70M200 326v70M4 200h70M326 200h70" pathLength="1"/>
+                                <path d="M200 176v14M200 210v14M176 200h14M210 200h14" class="fine" pathLength="1"/>
+                            </g>
+                            <g class="ret-brackets">
+                                <path d="M92 132V92h40"/><path d="M268 92h40v40"/><path d="M308 268v40h-40"/><path d="M132 308H92v-40"/>
+                            </g>
+                            <circle cx="200" cy="200" r="3.5" class="ret-dot"/>
+                        </svg>
+                        <p class="t-label ret-label">
+                            <span class="ret-idle">Alvo · Azzaro Wanted</span>
+                            <span class="ret-lock">Alvo travado</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="d-shade" aria-hidden="true"></div>
+                <i class="d-sweep" aria-hidden="true"></i>
+                <div class="d-corners" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            </div>
+
+            <div class="d-grid">
+                <div class="d-copy">
+                    <p class="t-label d-eyebrow" data-d="fade">
+                        <span class="d-num">III</span><span class="d-eyebrow-rule" aria-hidden="true"></span>O desejo
+                    </p>
+                    <h2 class="d-title" id="desire-title">
+                        <span class="d-line"><span class="d-line-in hollow">O desejo</span></span>
+                        <span class="d-line d-line-2"><span class="d-line-in">começa pela</span></span>
+                        <span class="d-line d-line-3"><span class="d-line-in"><em class="foil">sua presença.</em></span></span>
+                    </h2>
+                    <p class="t-label d-sign" data-d="fade">
+                        <svg class="d-sign-cyl" fill="none" stroke="currentColor" stroke-width="1" aria-hidden="true"><use href="#cyl"></use></svg>
+                        Azzaro Wanted · Eau de Toilette
+                    </p>
+                </div>
+
+                <aside class="d-card" id="dCard" aria-labelledby="d-card-title">
+                    <i class="d-card-glow" aria-hidden="true"></i>
+                    <span class="d-card-corner tl" aria-hidden="true"></span><span class="d-card-corner br" aria-hidden="true"></span>
+
+                    <p class="t-label d-card-kicker" data-d="card">
+                        <span class="pulse-dot" aria-hidden="true"></span>Disponível no site oficial
+                    </p>
+                    <h3 class="d-card-title" id="d-card-title" data-d="card">Azzaro <em class="foil">Wanted</em></h3>
+                    <p class="d-card-sub" data-d="card">Eau de Toilette · Pour Homme</p>
+
+                    <ul class="d-notes" aria-label="Acordes da composição">
+                        <li data-d="card"><i aria-hidden="true"></i>Cítrico</li>
+                        <li data-d="card"><i aria-hidden="true"></i>Especiado</li>
+                        <li data-d="card"><i aria-hidden="true"></i>Amadeirado</li>
+                    </ul>
+
+                    <Button variant="buy" id="dCta" wrapId="dCtaWrap" srLabel="Azzaro Wanted"
+                            href="https://www.azzaro.com/pt/perfumes/azzaro-wanted">Comprar agora</Button>
+
+                    <p class="d-card-foot" data-d="card">
+                        <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5.5c0 4.4-3 8.1-7 9.5-4-1.4-7-5.1-7-9.5V6z"/><path d="M9 12l2 2 4-4"/></svg>azzaro.com</span>
+                        <span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>Abre em nova aba</span>
+                    </p>
+                </aside>
+            </div>
+
+            <!-- Rodapé (src/components/Footer.astro) -->
+            <Footer />
+        </section>
+    </main>
+
+    <!-- Régua de seções (DS .rail + .tip) -->
+    <nav class="page-rail" id="pageRail" aria-label="Seções da página">
+        <a href="#hero" data-scroll-to="#hero" data-spy="hero" class="tip" aria-label="I · O filme"><span class="tooltip-box t-left" aria-hidden="true">I · O filme</span></a>
+        <a href="#wanted" data-scroll-to="#wanted" data-spy="wanted" class="tip" aria-label="II · A fragrância"><span class="tooltip-box t-left" aria-hidden="true">II · A fragrância</span></a>
+        <a href="#desejo" data-scroll-to="#desejo" data-spy="desejo" class="tip" aria-label="III · O desejo"><span class="tooltip-box t-left" aria-hidden="true">III · O desejo</span></a>
+        <i class="page-rail-line" aria-hidden="true"><b id="pageRailFill"></b></i>
+    </nav>
+
+    <!-- Cursor-mira (apenas ponteiro fino) -->
+    <div class="cursor" id="cursor" aria-hidden="true"><i class="cursor-ring"></i><i class="cursor-dot"></i></div>
+
+    <!-- Toast (DS .toast) -->
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+    <div class="noise" aria-hidden="true"></div>
+    <p class="sr-only" id="liveStatus" aria-live="polite"></p>
+
+    <!-- Bibliotecas (versões fixas, verificadas) -->
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.14.2/gsap.min.js" defer></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.14.2/ScrollTrigger.min.js" defer></script>
+    <script is:inline src="https://unpkg.com/lenis@1.3.11/dist/lenis.min.js" defer></script>
+    <script is:inline src={mainJs} defer></script>
+    <script is:inline src={wantedJs} defer></script>
+    <script is:inline src={desireJs} defer></script>
+    <script is:inline src={polishJs} defer></script>
+</body>
+</html>

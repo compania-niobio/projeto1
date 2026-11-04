@@ -1,0 +1,1726 @@
+<!DOCTYPE html>
+<html class="scroll-smooth" lang="pt-BR">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+    <meta name="theme-color" content="#050402" />
+    <title>Azzaro Design System</title>
+    <script>document.documentElement.classList.add('js');</script>
+
+    <!-- Mesmo JS dos templates: Tailwind runtime e iconify-icon (animations-gemini/assets) -->
+    <script src="templates/animations-gemini/assets/resource_3fa48481346f.js"></script>
+    <script src="templates/animations-gemini/assets/iconify-icon_e19829e7f0e8.js"></script>
+
+    <!-- Fontes: os css2_*.css locais apontam para .woff2 que não estão na pasta, por isso CDN -->
+    <link href="https://fonts.googleapis.com" rel="preconnect" />
+    <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&family=Instrument+Serif:ital@0;1&family=JetBrains+Mono:wght@400;500;700&display=swap" />
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        serif: ['Instrument Serif', 'Georgia', 'serif'],
+                        mono: ['JetBrains Mono', 'ui-monospace', 'monospace']
+                    }
+                }
+            }
+        };
+    </script>
+
+    <style>
+        /* ==========================================================
+           TOKENS. Cores amostradas dos frames de video/Azzaro.webm
+           ========================================================== */
+        :root {
+            --void: #050402;
+            --obsidian: #0F0A04;
+            --umber: #32210D;
+            --bronze: #7A5627;
+            --gold: #BA8A47;
+            --gold-bright: #E7CC8C;
+            --ivory: #FBF5DC;
+            --steel: #D1C7B6;
+            --amber: #EB910B;
+            --amber-deep: #C06D11;
+            --copper: #A36D2D;
+            --muted: #A79580;
+            --success: #8CBF6E;
+            --warning: #F4AC10;
+            --error: #E8604C;
+            --info: #8DB6D1;
+
+            --line: rgba(186, 138, 71, .24);
+            --line-soft: rgba(186, 138, 71, .12);
+            --sheet: rgba(5, 4, 2, .93);
+
+            --grad-foil: linear-gradient(100deg, #7A5627 0%, #BA8A47 22%, #FBF5DC 46%, #E7CC8C 58%, #BA8A47 78%, #7A5627 100%);
+            --grad-liquid: linear-gradient(180deg, #F4AC10 0%, #EB910B 45%, #7A5627 100%);
+            --grad-steel: linear-gradient(90deg, #32210D 0%, #D1C7B6 38%, #FBF5DC 50%, #D1C7B6 62%, #32210D 100%);
+            --grad-ember: radial-gradient(circle at 50% 50%, rgba(235, 145, 11, .55), rgba(122, 86, 39, .18) 45%, transparent 70%);
+
+            --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+            --ease-elastic: cubic-bezier(0.34, 1.56, 0.64, 1);
+            --dur-fast: .2s;
+            --dur-base: .5s;
+            --dur-slow: 1.2s;
+
+            --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+            --font-serif: 'Instrument Serif', Georgia, 'Times New Roman', serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+        }
+
+        html { background: var(--void) radial-gradient(60% 50% at 50% 40%, rgba(186, 138, 71, .28), transparent 70%) fixed; }
+
+        body {
+            font-family: var(--font-sans);
+            background: transparent;
+            color: var(--ivory);
+            overflow-x: hidden;
+        }
+
+        ::selection { background: var(--gold); color: var(--void); }
+        :focus-visible { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+
+        /* ==========================================================
+           O FILME. Um único <video> fixo atrás de toda a página.
+           ========================================================== */
+        #film {
+            position: fixed; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; z-index: -2;
+            transform: scale(1.05) translate3d(var(--fx, 0), var(--fy, 0), 0);
+            transition: transform 1.2s var(--ease-out);
+        }
+
+        .film-dip {
+            position: fixed; inset: 0; z-index: -1; background: var(--void);
+            opacity: 0; transition: opacity .35s ease; pointer-events: none;
+        }
+        .film-dip.on { opacity: 1; }
+
+        /* ==========================================================
+           FOLHAS E JANELAS. O lettering é um furo na folha.
+           ========================================================== */
+        .sheet { position: relative; background: var(--sheet); isolation: isolate; overflow: hidden; }
+
+        .frame {
+            max-width: 1400px; margin-inline: auto; position: relative;
+            border-inline: 1px solid var(--line);
+        }
+
+        .guides {
+            position: absolute; inset: 0; pointer-events: none; z-index: 0;
+            display: grid; grid-template-columns: 3fr 6fr 3fr;
+        }
+        .guides > div { border-right: 1px solid var(--line-soft); transform-origin: top; animation: guideIn 1.8s var(--ease-out) both; }
+        .guides > div:nth-child(2) { animation-delay: .15s; }
+        .guides > div:last-child { border-right: 0; }
+        @keyframes guideIn { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+
+        .window { position: relative; overflow: hidden; }
+        /* piso dourado: as letras nunca somem quando o filme está escuro */
+        .window::before { content: ""; position: absolute; inset: 0; background: var(--grad-foil); background-size: 220% 100%; opacity: .46; mix-blend-mode: screen; animation: foilMove 9s linear infinite; }
+        .window-note { position: absolute; right: clamp(1rem, 3vw, 3rem); bottom: 2rem; width: min(24vw, 320px); text-align: right; color: var(--steel); font-size: .9375rem; line-height: 1.5; display: none; }
+        @media (min-width: 1200px) { .window-note { display: block; } }
+        .window-sheet {
+            position: relative; background: var(--void); color: #fff;
+            mix-blend-mode: multiply; padding: 1.5rem clamp(1rem, 3vw, 3rem) 1.75rem;
+        }
+        .window-edge {
+            position: absolute; inset: 0; pointer-events: none;
+            padding: 1.5rem clamp(1rem, 3vw, 3rem) 1.75rem;
+            color: #fff; filter: url(#hollow); opacity: .8;
+        }
+        .window-title {
+            font-size: clamp(3rem, 12.4vw, 11rem); font-weight: 800; line-height: 1.02;
+            letter-spacing: -0.05em; white-space: nowrap;
+        }
+        .window-title .text-reveal-wrapper { padding-bottom: .14em; margin-bottom: -.14em; }
+
+        /* Lettering dourado */
+        .gradient-text {
+            background: var(--grad-foil); background-size: 220% 100%;
+            -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: foilMove 7s linear infinite;
+        }
+        @keyframes foilMove { from { background-position: 0% 0; } to { background-position: 220% 0; } }
+
+        /* contorno por filtro: a Inter variável tem contornos sobrepostos e text-stroke os revelaria */
+        .text-hollow { color: #fff; filter: url(#hollow); transition: filter .6s var(--ease-out); }
+        .text-hollow:hover { filter: url(#hollow) drop-shadow(0 0 14px rgba(235, 145, 11, .8)); }
+
+        .text-difference { color: var(--gold-bright); mix-blend-mode: difference; }
+
+        /* ==========================================================
+           CLASSES DOS TEMPLATES (digital-architect + gemini + gemini2)
+           ========================================================== */
+        .reveal { opacity: 0; transform: translateY(2rem); transition: all 1s cubic-bezier(0.16, 1, 0.3, 1); }
+        .reveal.active { opacity: 1; transform: translateY(0); }
+        html:not(.js) .reveal { opacity: 1; transform: none; }
+
+        .text-reveal-wrapper { overflow: hidden; display: inline-block; vertical-align: bottom; }
+        .text-reveal-content {
+            transform: translateY(110%); opacity: 0; display: block;
+            transition: transform 1.2s cubic-bezier(0.16, 1, 0.3, 1), opacity 1.2s ease;
+        }
+        .reveal-active .text-reveal-content { transform: translateY(0); opacity: 1; }
+        html:not(.js) .text-reveal-content { transform: none; opacity: 1; }
+
+        .delay-100 { transition-delay: .1s; }
+        .delay-200 { transition-delay: .2s; }
+        .delay-300 { transition-delay: .3s; }
+        .delay-500 { transition-delay: .5s; }
+        .delay-700 { transition-delay: .7s; }
+
+        @keyframes animationIn {
+            0% { opacity: 0; transform: translateY(30px); filter: blur(10px); }
+            100% { opacity: 1; transform: translateY(0); filter: blur(0px); }
+        }
+        @keyframes textSlide { 0% { transform: translateY(110%); opacity: 0; } 100% { transform: translateY(0); opacity: 1; } }
+        .text-clip-anim { display: inline-flex; overflow: hidden; }
+        .text-clip-anim span { display: inline-block; animation: textSlide .9s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+
+        .animate-on-scroll { animation-play-state: paused !important; }
+        .animate-on-scroll.animate { animation-play-state: running !important; }
+        html:not(.js) .animate-on-scroll { animation: none !important; }
+        .blur-in { animation: animationIn .8s ease-out both; }
+
+        .marquee-container { display: flex; overflow: hidden; user-select: none; }
+        .marquee-content { flex-shrink: 0; display: flex; justify-content: space-around; min-width: 100%; animation: scroll 40s linear infinite; }
+        @keyframes scroll { from { transform: translateX(0); } to { transform: translateX(-100%); } }
+        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
+        .animate-marquee { animation: marquee 40s linear infinite; }
+
+        .nav-load { opacity: 0; transform: translateY(-10px); transition: all .8s ease-out; }
+        .nav-load.loaded { opacity: 1; transform: translateY(0); }
+        html:not(.js) .nav-load { opacity: 1; transform: none; }
+
+        iconify-icon { display: inline-flex; align-items: center; justify-content: center; vertical-align: middle; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .parallax-element { will-change: transform; }
+
+        @keyframes shimmer { from { transform: translateX(-100%) skewX(-15deg); } to { transform: translateX(200%) skewX(-15deg); } }
+
+        .glass-panel { background: rgba(15, 10, 4, .56); backdrop-filter: blur(20px) saturate(1.3); -webkit-backdrop-filter: blur(20px) saturate(1.3); }
+
+        .flashlight-card { position: relative; background: rgba(186, 138, 71, .035); }
+        .flashlight-card::before {
+            content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none;
+            background: radial-gradient(420px circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(231, 204, 140, .17), transparent 42%);
+            opacity: 0; transition: opacity .5s;
+        }
+        .flashlight-card:hover::before { opacity: 1; }
+
+        .beam-button { position: relative; overflow: hidden; }
+        .beam-button::before {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .55), transparent);
+            transition: left .6s;
+        }
+        .beam-button:hover::before { left: 100%; }
+
+        .glow-on-hover { transition: box-shadow .3s ease, transform .3s ease, border-color .3s ease; }
+        .glow-on-hover:hover { box-shadow: 0 0 34px rgba(235, 145, 11, .28), 0 0 2px rgba(231, 204, 140, .8); transform: translateY(-2px); }
+
+        .grid-bg {
+            background-size: 40px 40px;
+            background-image:
+                linear-gradient(to right, rgba(186, 138, 71, .07) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(186, 138, 71, .07) 1px, transparent 1px);
+        }
+
+        .noise {
+            position: fixed; inset: 0; opacity: .05; pointer-events: none; z-index: 70;
+            background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+        }
+
+        .section-divider { width: 100%; height: 1px; background: linear-gradient(to right, transparent, var(--gold), transparent); }
+
+        #tooltip {
+            position: fixed; left: 0; top: 0; z-index: 100; pointer-events: none; opacity: 0;
+            padding: 8px 12px; border: 1px solid var(--line); border-radius: 4px;
+            background: rgba(15, 10, 4, .9); backdrop-filter: blur(8px);
+            font: 500 12px/1.3 var(--font-mono); color: var(--gold-bright);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, .5); transition: opacity .2s;
+        }
+
+        .icon-base { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; transition: all .2s cubic-bezier(.4, 0, .2, 1); }
+        .icon-card:hover .icon-base { transform: scale(1.14); stroke: var(--gold-bright); }
+        .svg-icon { fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+        .draw-path { stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: dash 1.5s cubic-bezier(.16, 1, .3, 1) forwards; }
+        .grow-bar { transform-origin: bottom; transform: scaleY(0); animation: grow 1s cubic-bezier(.16, 1, .3, 1) forwards; }
+        .fade-in { opacity: 0; animation: fade 1s ease forwards; }
+        @keyframes dash { to { stroke-dashoffset: 0; } }
+        @keyframes grow { to { transform: scaleY(1); } }
+        @keyframes fade { to { opacity: 1; } }
+        @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes morph { 0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; } 50% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; } }
+        @keyframes radar { 0% { transform: scale(.5); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        @keyframes ring-dash { 0% { stroke-dasharray: 1, 200; stroke-dashoffset: 0; } 50% { stroke-dasharray: 90, 200; stroke-dashoffset: -35px; } 100% { stroke-dasharray: 90, 200; stroke-dashoffset: -124px; } }
+        @keyframes dash-draw { 0% { stroke-dashoffset: 100; } 50% { stroke-dashoffset: 0; } 100% { stroke-dashoffset: -100; } }
+        @keyframes shake { 10%, 90% { transform: translate3d(-1px, 0, 0); } 20%, 80% { transform: translate3d(2px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-4px, 0, 0); } 40%, 60% { transform: translate3d(4px, 0, 0); } }
+        @keyframes pop { 0% { transform: scale(1); } 50% { transform: scale(1.4); } 100% { transform: scale(1); } }
+
+        .card {
+            position: relative; height: 150px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background: rgba(15, 10, 4, .7); border: 1px solid var(--line-soft); border-radius: 4px;
+            transition: border-color .3s, background-color .3s;
+        }
+        .card:hover { border-color: var(--gold); background: rgba(50, 33, 13, .5); }
+        .label { position: absolute; bottom: 12px; font: 500 10px/1 var(--font-mono); letter-spacing: .1em; color: var(--muted); text-transform: uppercase; pointer-events: none; }
+
+        .tooltip-box { transform: translateY(10px) scale(.95); opacity: 0; transition: all .3s var(--ease-elastic); pointer-events: none; }
+
+        .dl-arrow-group { transition: transform .4s var(--ease-out), opacity .2s; }
+        .dl-progress { stroke-dasharray: 64; stroke-dashoffset: 64; transition: stroke-dashoffset 1.1s linear; opacity: 0; }
+        .dl-check { transform: scale(0); transform-origin: center; transition: transform .3s var(--ease-elastic); }
+        .downloading .dl-arrow-group { transform: translateY(10px); opacity: 0; }
+        .downloading .dl-progress { stroke-dashoffset: 0; opacity: 1; }
+        .download-done .dl-arrow-group { opacity: 0; }
+        .download-done .dl-check { transform: scale(1); }
+
+        .lid { transform-origin: 12px 5px; transition: transform .3s var(--ease-elastic); }
+        .card:hover .lid { transform: translateY(-3px) rotate(-15deg); }
+
+        .comp-label { display: block; margin-bottom: 1rem; font: 500 .65rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+        .comp-card { position: relative; display: flex; flex-direction: column; gap: 1rem; padding: 1.75rem; background: rgba(15, 10, 4, .72); border: 1px solid var(--line-soft); }
+        .grid-box { position: relative; overflow: hidden; padding: 1.5rem; background: rgba(15, 10, 4, .72); border: 1px solid var(--line-soft); transition: border-color .3s; }
+        .grid-box:hover { border-color: var(--gold); }
+
+        input:checked ~ .checkbox-box { background: var(--gold-bright); border-color: var(--gold-bright); }
+        input:checked ~ .checkbox-box svg { transform: scale(1); }
+        input:focus-visible ~ .checkbox-box, input:focus-visible ~ .toggle-track { outline: 2px solid var(--gold-bright); outline-offset: 3px; }
+
+        /* ==========================================================
+           FUNDOS ANIMADOS DAS SEÇÕES
+           ========================================================== */
+        .bg-layer { position: absolute; inset: 0; pointer-events: none; z-index: -1; }
+
+        .aurora { position: absolute; width: 56vw; max-width: 780px; aspect-ratio: 1; border-radius: 50%; background: var(--grad-ember); filter: blur(46px); opacity: .5; animation: drift 26s ease-in-out infinite alternate; }
+        .aurora.b { animation-duration: 34s; animation-direction: alternate-reverse; opacity: .34; }
+        @keyframes drift { from { transform: translate3d(-8%, -6%, 0) scale(1); } to { transform: translate3d(14%, 12%, 0) scale(1.22); } }
+
+        .cylinders, .cylinders-lit {
+            position: absolute; inset: 0; background-size: 96px 166px;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='166'%3E%3Cg fill='none' stroke='%23BA8A47'%3E%3Cg id='c'%3E%3Ccircle cx='0' cy='0' r='44'/%3E%3Ccircle cx='0' cy='0' r='35'/%3E%3Ccircle cx='0' cy='0' r='6'/%3E%3C/g%3E%3Ccircle cx='96' cy='0' r='44'/%3E%3Ccircle cx='96' cy='0' r='35'/%3E%3Ccircle cx='96' cy='0' r='6'/%3E%3Ccircle cx='48' cy='83' r='44'/%3E%3Ccircle cx='48' cy='83' r='35'/%3E%3Ccircle cx='48' cy='83' r='6'/%3E%3Ccircle cx='0' cy='166' r='44'/%3E%3Ccircle cx='0' cy='166' r='35'/%3E%3Ccircle cx='0' cy='166' r='6'/%3E%3Ccircle cx='96' cy='166' r='44'/%3E%3Ccircle cx='96' cy='166' r='35'/%3E%3Ccircle cx='96' cy='166' r='6'/%3E%3C/g%3E%3C/svg%3E");
+            animation: cylDrift 60s linear infinite;
+        }
+        .cylinders { opacity: .13; }
+        .cylinders-lit {
+            opacity: .95;
+            -webkit-mask-image: radial-gradient(300px circle at var(--sx, -400px) var(--sy, -400px), #000, transparent 72%);
+            mask-image: radial-gradient(300px circle at var(--sx, -400px) var(--sy, -400px), #000, transparent 72%);
+        }
+        @keyframes cylDrift { to { background-position: 96px 166px; } }
+
+        .streak {
+            position: absolute; left: -30%; top: 30%; width: 160%; height: 2px;
+            background: linear-gradient(90deg, transparent, var(--gold) 40%, var(--ivory) 50%, var(--gold) 60%, transparent);
+            box-shadow: 0 0 22px 3px rgba(235, 145, 11, .55);
+            transform: rotate(-16deg) translateX(-70%); opacity: 0;
+            animation: streak 11s ease-in-out infinite;
+        }
+        .streak.b { top: 68%; animation-delay: 5.5s; transform: rotate(14deg) translateX(-70%); animation-name: streakB; }
+        @keyframes streak { 0%, 62% { transform: rotate(-16deg) translateX(-70%); opacity: 0; } 68% { opacity: .85; } 84% { opacity: .55; } 92%, 100% { transform: rotate(-16deg) translateX(70%); opacity: 0; } }
+        @keyframes streakB { 0%, 62% { transform: rotate(14deg) translateX(70%); opacity: 0; } 68% { opacity: .7; } 84% { opacity: .4; } 92%, 100% { transform: rotate(14deg) translateX(-70%); opacity: 0; } }
+
+        #embers { position: fixed; inset: 0; z-index: 45; pointer-events: none; }
+
+        /* ==========================================================
+           CABEÇALHO, HERO
+           ========================================================== */
+        .topbar {
+            position: sticky; top: 0; z-index: 50;
+            background: rgba(5, 4, 2, .72); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--line);
+        }
+        .progress { position: absolute; left: 0; bottom: -1px; height: 1px; width: 100%; background: var(--grad-foil); transform: scaleX(var(--p, 0)); transform-origin: left; }
+
+        .nav-link { position: relative; font-size: .75rem; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: var(--steel); transition: color .3s; }
+        .nav-link::after { content: ""; position: absolute; left: 0; right: 0; bottom: -6px; height: 1px; background: var(--gold-bright); transform: scaleX(0); transform-origin: right; transition: transform .5s var(--ease-out); }
+        .nav-link:hover, .nav-link.is-active { color: var(--gold-bright); }
+        .nav-link:hover::after, .nav-link.is-active::after { transform: scaleX(1); transform-origin: left; }
+
+        .brand-cyl { width: 22px; height: 22px; transition: transform .7s var(--ease-elastic); }
+        .group:hover > .brand-cyl { transform: rotate(180deg); }
+
+        .hero { position: relative; display: flex; flex-direction: column; min-height: calc(100svh - 65px); }
+        .hero-light {
+            position: absolute; inset: 0; pointer-events: none;
+            background: radial-gradient(440px circle at var(--mx, 50%) var(--my, 40%), rgba(251, 245, 220, .16), transparent 70%);
+            mix-blend-mode: screen;
+        }
+        .hero-top { position: relative; flex: 1; min-height: 0; display: flex; background: linear-gradient(180deg, rgba(5, 4, 2, .4) 0%, rgba(5, 4, 2, .08) 26%, rgba(5, 4, 2, .14) 52%, rgba(5, 4, 2, .5) 74%, rgba(5, 4, 2, .88) 91%, rgba(5, 4, 2, 1) 100%); }
+        .hero-top > .frame { flex: 1; display: grid; min-width: 0; }
+        .hero-scrim { position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgba(5, 4, 2, .84) 0%, rgba(5, 4, 2, .66) 34%, rgba(5, 4, 2, 0) 60%); }
+        .hero-grid { position: relative; display: grid; grid-template-columns: repeat(12, 1fr); min-height: 380px; }
+        .hero-copy { grid-column: span 9; display: flex; flex-direction: column; justify-content: flex-end; padding: 1.5rem clamp(1rem, 3vw, 2.5rem) 1.5rem; }
+        .hero-stats { grid-column: span 3; display: grid; grid-template-rows: repeat(3, 1fr); border-left: 1px solid var(--line); }
+        .hero-stat { padding: 1.1rem 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; border-bottom: 1px solid var(--line); transition-property: opacity, transform, background-color; }
+        .hero-stat:last-child { border-bottom: 0; }
+        .hero-stat:hover { background: rgba(50, 33, 13, .7); }
+        .hero-title { font-size: clamp(3.25rem, 7.4vw, 6.75rem); font-weight: 600; letter-spacing: -0.05em; line-height: 1; }
+        .hero-title em { font-family: var(--font-serif); font-weight: 400; letter-spacing: -0.02em; }
+
+        .hero-letters { display: block; width: 100%; height: auto; background: transparent; margin-top: -1px; }
+        .hero-letters .cut { fill: #000; transition: fill 1.5s ease .1s; }
+        .js .hero-letters:not(.opened) .cut { fill: #fff; }
+        .hero-letters .edge { fill: none; stroke: url(#g-edge); stroke-width: 3.2; stroke-dasharray: 2600; stroke-dashoffset: 0; }
+        .js .hero-letters:not(.drawn) .edge { stroke-dashoffset: 2600; }
+        .js .hero-letters.drawn .edge { animation: heroDraw 2.6s var(--ease-out) both; }
+        @keyframes heroDraw { from { stroke-dashoffset: 2600; } to { stroke-dashoffset: 0; } }
+        .hero-letters .glow { fill: none; stroke: var(--amber); stroke-width: 12; opacity: 0; filter: blur(7px); }
+        .js .hero-letters.opened .glow { animation: glowPulse 5.5s ease-in-out infinite 1.4s; }
+        @keyframes glowPulse { 0%, 100% { opacity: .08; } 50% { opacity: .42; } }
+
+        .fold-marquee { position: relative; background: var(--void); border-block: 1px solid var(--line); padding-block: .9rem; overflow: hidden; }
+        .fold-marquee span { font: 500 .8125rem/1.2 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--gold); margin-inline: 2rem; white-space: nowrap; }
+
+        .pill-badge { padding: .25rem .75rem; border: 1px solid rgba(231, 204, 140, .45); border-radius: 999px; font: 500 .75rem/1.4 var(--font-mono); text-transform: uppercase; color: var(--ivory); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
+
+        .curtain { position: fixed; inset: 0; z-index: 90; display: grid; place-items: center; pointer-events: none; }
+        .curtain i { position: absolute; left: 0; right: 0; height: 50.2%; background: var(--void); transition: transform 1.1s var(--ease-out); }
+        .curtain i:first-child { top: 0; }
+        .curtain i:nth-child(2) { bottom: 0; }
+        .curtain svg { position: relative; width: 72px; height: 72px; color: var(--gold-bright); transition: opacity .3s; animation: chamber 1.1s steps(6) both; }
+        .curtain.open i:first-child { transform: translateY(-100%); }
+        .curtain.open i:nth-child(2) { transform: translateY(100%); }
+        .curtain.open svg { opacity: 0; }
+        @keyframes chamber { to { transform: rotate(360deg); } }
+
+        .rail { position: fixed; right: 18px; top: 50%; transform: translateY(-50%); z-index: 60; display: flex; flex-direction: column; gap: 16px; }
+        .rail a { width: 8px; height: 8px; border-radius: 50%; background: rgba(231, 204, 140, .28); transition: all .3s; }
+        .rail a:hover, .rail a.on { background: var(--gold-bright); transform: scale(1.35); box-shadow: 0 0 12px rgba(235, 145, 11, .8); }
+
+        /* ==========================================================
+           ESTRUTURA DE SEÇÃO
+           ========================================================== */
+        .section-label { display: flex; justify-content: space-between; gap: 1rem; padding: 1.1rem clamp(1rem, 3vw, 3rem); background: var(--void); border-block: 1px solid var(--line); font: 500 .75rem/1.3 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--gold); }
+        .section-label span:last-child { color: var(--muted); text-align: right; }
+        .pad { padding: clamp(1.5rem, 4vw, 3rem); }
+        .sub-title { display: flex; flex-wrap: wrap; align-items: baseline; gap: .25rem .75rem; margin-bottom: 1.25rem; font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
+        .sub-title small { font: 500 .75rem/1 var(--font-mono); color: var(--muted); letter-spacing: .08em; }
+        .divider-b { border-bottom: 1px solid var(--line); }
+
+        /* Escala tipográfica */
+        .t-display { font-family: var(--font-sans); font-weight: 800; font-size: clamp(4rem, 9vw, 8rem); line-height: .95; letter-spacing: -0.05em; }
+        .t-h1 { font-weight: 600; font-size: clamp(3rem, 6vw, 4.5rem); line-height: 1; letter-spacing: -0.05em; }
+        .t-h2 { font-weight: 500; font-size: clamp(2.5rem, 4vw, 3rem); line-height: 1.05; letter-spacing: -0.05em; }
+        .t-h3 { font-weight: 500; font-size: 2.25rem; line-height: 1.1; letter-spacing: -0.025em; }
+        .t-h4 { font-weight: 500; font-size: 1.75rem; line-height: 1.2; letter-spacing: -0.025em; }
+        .t-h5 { font-weight: 600; font-size: 1.25rem; line-height: 1.3; letter-spacing: -0.015em; }
+        .t-h6 { font-weight: 700; font-size: .875rem; line-height: 1.4; letter-spacing: .1em; text-transform: uppercase; }
+        .t-body-lg { font-weight: 400; font-size: 1.125rem; line-height: 1.625; }
+        .t-body { font-weight: 400; font-size: 1rem; line-height: 1.6; }
+        .t-body-sm { font-weight: 400; font-size: .875rem; line-height: 1.55; }
+        .t-caption { font-family: var(--font-serif); font-style: italic; font-weight: 400; font-size: 1.125rem; line-height: 1.35; }
+        .t-label { font-family: var(--font-mono); font-weight: 500; font-size: .75rem; line-height: 1.3; letter-spacing: .1em; text-transform: uppercase; }
+        .t-helper { font-weight: 400; font-size: .75rem; line-height: 1.45; color: var(--steel); }
+
+        .type-row { position: relative; display: grid; grid-template-columns: 3fr 6fr 3fr; align-items: baseline; border-bottom: 1px solid var(--line); transition: background-color .4s; }
+        .type-row:hover { background: rgba(50, 33, 13, .3); }
+        .type-row > div { padding: 1.5rem clamp(1rem, 3vw, 2.5rem); min-width: 0; }
+        .type-spec { display: grid; grid-template-columns: auto 1fr; gap: .15rem .75rem; font: 400 .6875rem/1.5 var(--font-mono); color: var(--steel); }
+        .type-spec dt { color: var(--muted); }
+        .type-spec dd { min-width: 0; overflow-wrap: anywhere; }
+
+        /* Cores */
+        .cgroups { display: grid; grid-template-columns: repeat(4, 1fr); gap: 2.5rem .75rem; }
+        .cgroup { grid-column: span var(--n); min-width: 0; }
+        .cgroup-grid { display: grid; grid-template-columns: repeat(var(--n), 1fr); gap: .75rem; }
+        .swatch { position: relative; min-width: 0; display: flex; flex-direction: column; border: 1px solid var(--line-soft); background: rgba(15, 10, 4, .72); transition: border-color .3s, transform .5s var(--ease-out); }
+        .swatch:hover { border-color: var(--gold); transform: translateY(-3px); }
+        .swatch-chip { position: relative; display: flex; align-items: flex-end; justify-content: space-between; width: 100%; height: 132px; padding: .75rem; overflow: hidden; text-align: left; cursor: copy; }
+        .swatch-chip::after { content: ""; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, .35) 50%, transparent 60%); transform: translateX(-110%); transition: transform .9s var(--ease-out); }
+        .swatch:hover .swatch-chip::after { transform: translateX(110%); }
+        .vals { display: grid; grid-template-columns: auto 1fr; gap: .15rem .6rem; font: 400 .6875rem/1.5 var(--font-mono); color: var(--steel); }
+        .vals dt { color: var(--muted); }
+        .ops { display: grid; grid-template-columns: repeat(6, 1fr); height: 22px; background-image: linear-gradient(45deg, #1b140a 25%, transparent 25%, transparent 75%, #1b140a 75%), linear-gradient(45deg, #1b140a 25%, transparent 25%, transparent 75%, #1b140a 75%); background-size: 10px 10px; background-position: 0 0, 5px 5px; }
+        .aa { display: inline-flex; gap: .3rem; align-items: center; font: 500 .625rem/1 var(--font-mono); padding: .25rem .4rem; border: 1px solid var(--line); color: var(--steel); }
+        .aa b { color: var(--gold-bright); font-weight: 700; }
+        .ctx-table { width: 100%; border-collapse: collapse; font-size: .8125rem; min-width: 760px; }
+        .ctx-table th { text-align: left; font: 500 .6875rem/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--gold); padding: .75rem 1rem; border-bottom: 1px solid var(--line); }
+        .ctx-table td { padding: .85rem 1rem; border-bottom: 1px solid var(--line-soft); color: var(--steel); vertical-align: middle; }
+        .ctx-table td:first-child { color: var(--ivory); font-weight: 600; }
+        .dot { display: inline-block; width: 11px; height: 11px; border-radius: 50%; margin-right: .4rem; vertical-align: -1px; border: 1px solid rgba(255, 255, 255, .2); }
+
+        /* Componentes */
+        .comp { display: grid; grid-template-columns: 8fr 4fr; border-bottom: 1px solid var(--line); }
+        .comp.flip { grid-template-columns: 4fr 8fr; }
+        .comp.flip .comp-stage { order: 2; border-left: 1px solid var(--line); border-right: 0; }
+        .comp.stacked { grid-template-columns: 1fr; }
+        .comp.stacked .comp-stage { border-right: 0; border-bottom: 1px solid var(--line); }
+        .comp.stacked .comp-spec .spec { grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 1.25rem 2rem; }
+        .comp-stage { position: relative; padding: clamp(1.5rem, 3.5vw, 3rem); border-right: 1px solid var(--line); min-width: 0; }
+        .comp-spec { padding: clamp(1.5rem, 3vw, 2.25rem); background: rgba(15, 10, 4, .6); min-width: 0; }
+        .spec { display: grid; gap: .8rem; font-size: .8125rem; line-height: 1.5; color: var(--steel); }
+        .spec dt { font: 500 .6875rem/1.3 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin-bottom: .15rem; }
+        .spec code { font-family: var(--font-mono); font-size: .75rem; color: var(--gold-bright); overflow-wrap: anywhere; }
+
+        .btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: .6rem; min-height: 46px; padding: .75rem 1.75rem; border-radius: 999px; font-size: .875rem; font-weight: 600; white-space: nowrap; cursor: pointer; transition: transform .25s var(--ease-out), box-shadow .3s, background-color .3s, color .3s, border-color .3s; }
+        .btn:active { transform: scale(.97); }
+        .btn-foil { color: var(--void); background: var(--gold-bright); }
+        .btn-foil:hover { background: var(--ivory); }
+        .btn-foil iconify-icon, .btn-outline iconify-icon, .btn-beam iconify-icon { transition: transform .3s var(--ease-out); }
+        .btn:hover iconify-icon { transform: translateX(3px); }
+        .btn-outline { color: var(--gold-bright); border: 1px solid var(--gold); overflow: hidden; isolation: isolate; text-transform: uppercase; letter-spacing: .1em; font-size: .75rem; }
+        .btn-outline::after { content: ""; position: absolute; inset: 0; z-index: -1; background: var(--gold-bright); border-radius: inherit; transform: translateY(101%); transition: transform .5s var(--ease-out); }
+        .btn-outline:hover { color: var(--void); }
+        .btn-outline:hover::after { transform: translateY(0); }
+        .btn-ghost { min-height: 0; padding: 0 0 2px; border-radius: 0; color: var(--steel); background: linear-gradient(var(--gold-bright), var(--gold-bright)) 0 100% / 100% 1px no-repeat; transition: background-size .5s var(--ease-out), color .3s; }
+        .btn-ghost:hover { color: var(--gold-bright); background-size: 0 1px; background-position: 100% 100%; }
+        .btn-ghost:hover iconify-icon { transform: translate(2px, -2px); }
+        .btn-icon { width: 46px; min-height: 46px; padding: 0; border: 1px solid var(--gold); color: var(--gold-bright); }
+        .btn-icon:hover { background: var(--gold-bright); color: var(--void); }
+        .btn:disabled, .btn[aria-disabled="true"] { opacity: .4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .btn-beam-wrap { position: relative; display: inline-flex; border-radius: 999px; }
+        .btn-beam-wrap > .halo { position: absolute; inset: -8px; border-radius: inherit; background: rgba(235, 145, 11, .32); filter: blur(18px); opacity: 0; transition: opacity .5s; }
+        .btn-beam-wrap:hover > .halo { opacity: 1; }
+        .btn-beam { position: relative; display: inline-flex; padding: 1.5px; border-radius: 999px; overflow: hidden; cursor: pointer; line-height: 1; background: rgba(186, 138, 71, .45); }
+        .btn-beam > .spin { position: absolute; inset: -1000%; background: conic-gradient(from 0deg, transparent 0 220deg, var(--gold) 310deg, var(--ivory) 360deg); animation: spin 2.4s linear infinite; }
+        .btn-beam > .core { position: relative; display: inline-flex; align-items: center; gap: .75rem; padding: .95rem 2rem; border-radius: 999px; background: rgba(5, 4, 2, .94); color: var(--ivory); font-size: .9375rem; font-weight: 600; overflow: hidden; white-space: nowrap; }
+        .btn-beam .shine { position: absolute; inset: 0; width: 100%; background: linear-gradient(90deg, transparent, rgba(231, 204, 140, .28), transparent); opacity: 0; }
+        .btn-beam:hover .shine { opacity: 1; animation: shimmer 1.5s infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .field { position: relative; display: block; }
+        .field input, .field textarea, .field select {
+            width: 100%; min-height: 54px; padding: 1.35rem .9rem .45rem; background: rgba(5, 4, 2, .65); color: var(--ivory); font-size: 1rem;
+            border: 0; border-bottom: 1px solid var(--bronze); border-radius: 4px 4px 0 0; outline: none; transition: background-color .3s, border-color .3s;
+        }
+        .field select { color-scheme: dark; }
+        .field textarea { min-height: 96px; resize: vertical; }
+        .field span.flabel { position: absolute; left: .9rem; top: 1rem; font-size: .9375rem; color: var(--muted); pointer-events: none; transform-origin: left top; transition: transform .35s var(--ease-out), color .3s; }
+        .field input:focus ~ .flabel, .field input:not(:placeholder-shown) ~ .flabel, .field textarea:focus ~ .flabel, .field textarea:not(:placeholder-shown) ~ .flabel, .field select ~ .flabel { transform: translateY(-.55rem) scale(.74); color: var(--gold); }
+        .field i.bar { position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--grad-foil); transform: scaleX(0); transform-origin: left; transition: transform .6s var(--ease-out); }
+        .field input:focus ~ .bar, .field textarea:focus ~ .bar, .field select:focus ~ .bar { transform: scaleX(1); }
+        .field:hover input, .field:hover textarea, .field:hover select { background: rgba(50, 33, 13, .45); }
+        .field small { display: block; margin-top: .35rem; min-height: 1.1em; }
+        .field.is-error input { border-color: var(--error); }
+        .field.is-error small { color: var(--error); }
+        .field.is-error { animation: shake .5s ease-in-out; }
+        .field.is-ok small { color: var(--success); }
+        .field input:disabled { opacity: .45; cursor: not-allowed; }
+
+        .toggle-track { position: relative; width: 48px; height: 26px; border-radius: 999px; background: var(--umber); border: 1px solid var(--bronze); transition: background-color .3s, border-color .3s; }
+        .toggle-track::after { content: ""; position: absolute; top: 3px; left: 3px; width: 18px; height: 18px; border-radius: 50%; background: var(--steel); transition: transform .4s var(--ease-elastic), background-color .3s, box-shadow .3s; }
+        input:checked ~ .toggle-track { background: rgba(235, 145, 11, .3); border-color: var(--amber); }
+        input:checked ~ .toggle-track::after { transform: translateX(22px); background: var(--gold-bright); box-shadow: 0 0 12px var(--amber); }
+
+        input[type=range].gold { -webkit-appearance: none; appearance: none; width: 100%; height: 22px; background: transparent; cursor: pointer; }
+        input[type=range].gold::-webkit-slider-runnable-track { height: 2px; background: linear-gradient(90deg, var(--gold-bright) var(--v, 50%), var(--bronze) var(--v, 50%)); }
+        input[type=range].gold::-webkit-slider-thumb { -webkit-appearance: none; width: 18px; height: 18px; margin-top: -8px; border-radius: 50%; background: var(--gold-bright); box-shadow: 0 0 0 4px rgba(235, 145, 11, .22); transition: box-shadow .3s; }
+        input[type=range].gold:hover::-webkit-slider-thumb { box-shadow: 0 0 0 9px rgba(235, 145, 11, .2); }
+        input[type=range].gold::-moz-range-track { height: 2px; background: var(--bronze); }
+        input[type=range].gold::-moz-range-thumb { width: 18px; height: 18px; border: 0; border-radius: 50%; background: var(--gold-bright); }
+
+        .still { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+        .project { display: grid; grid-template-columns: 1fr 1fr; min-height: 250px; border: 1px solid var(--line); background: rgba(15, 10, 4, .75); cursor: pointer; overflow: hidden; transition: background-color .5s; }
+        .project:hover { background: rgba(50, 33, 13, .6); }
+        .project .media { position: relative; min-height: 220px; overflow: hidden; border-left: 1px solid var(--line); }
+        .project .still { filter: grayscale(1) contrast(1.15); opacity: .8; transition: transform .7s var(--ease-out), filter .7s, opacity .7s; }
+        .project:hover .still { transform: scale(1.06); filter: none; opacity: 1; }
+        .project h4 { transition: transform .5s var(--ease-out); }
+        .project:hover h4 { transform: translateX(8px); }
+
+        .stack { position: relative; height: 300px; perspective: 1000px; }
+        .stack-card { position: absolute; left: 7%; right: 7%; top: 0; height: 248px; overflow: hidden; border: 1px solid var(--line); background: var(--obsidian); transition: transform .7s var(--ease-out), opacity .7s; }
+        .stack-card[data-pos="0"] { transform: translateY(26px) scale(1); z-index: 3; opacity: 1; }
+        .stack-card[data-pos="1"] { transform: translateY(10px) scale(.94); z-index: 2; opacity: .55; }
+        .stack-card[data-pos="2"] { transform: translateY(-6px) scale(.88); z-index: 1; opacity: .25; }
+        .stack-card .cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 2.25rem 1.25rem 1rem; background: linear-gradient(transparent, rgba(5, 4, 2, .92)); }
+
+        .mini-nav { position: relative; display: flex; align-items: center; justify-content: space-between; padding: .9rem 1.25rem; background: rgba(5, 4, 2, .8); border: 1px solid var(--line); }
+        .mini-float { display: inline-flex; align-items: center; gap: .25rem; padding: .35rem; border-radius: 999px; background: rgba(15, 10, 4, .7); border: 1px solid var(--line); backdrop-filter: blur(12px); }
+        .mini-float a { padding: .5rem .95rem; border-radius: 999px; font-size: .75rem; font-weight: 500; color: var(--steel); transition: color .3s, background-color .3s; }
+        .mini-float a:hover { color: var(--ivory); background: rgba(186, 138, 71, .16); }
+        .mini-float a.on { color: var(--void); background: var(--gold-bright); }
+
+        dialog.modal {
+            margin: auto; padding: 0; width: min(760px, calc(100vw - 2rem)); max-height: calc(100dvh - 2rem);
+            color: var(--ivory); background: var(--obsidian); border: 1px solid var(--gold); overflow: auto;
+            box-shadow: 0 0 80px rgba(235, 145, 11, .22);
+        }
+        dialog.modal[open] { animation: animationIn .55s var(--ease-out) both; }
+        dialog.modal::backdrop { background: rgba(5, 4, 2, .72); backdrop-filter: blur(10px); }
+        .modal-grid { display: grid; grid-template-columns: 5fr 7fr; }
+        .modal-media { position: relative; min-height: 320px; overflow: hidden; }
+
+        .badge { display: inline-flex; align-items: center; gap: .4rem; padding: .28rem .7rem; border-radius: 999px; font: 500 .6875rem/1.4 var(--font-mono); letter-spacing: .06em; text-transform: uppercase; transition: transform .3s var(--ease-elastic), box-shadow .3s; }
+        .badge:hover { transform: translateY(-2px); }
+        .badge-foil { position: relative; overflow: hidden; color: var(--void); background: var(--grad-foil); background-size: 220% 100%; animation: foilMove 7s linear infinite; }
+        .badge-hollow { color: var(--gold-bright); border: 1px solid var(--gold); }
+        .badge-glass { color: var(--ivory); border: 1px solid rgba(231, 204, 140, .4); background: rgba(231, 204, 140, .08); backdrop-filter: blur(10px); }
+        .badge-status { color: var(--c); border: 1px solid var(--c); background: color-mix(in srgb, var(--c) 10%, transparent); }
+        .pulse-dot { position: relative; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+        .pulse-dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 1px solid currentColor; animation: radar 2s infinite; }
+        .ribbon { position: absolute; top: 14px; right: -38px; rotate: 45deg; padding: .2rem 2.6rem; background: var(--gold-bright); color: var(--void); font: 700 .625rem/1.4 var(--font-mono); letter-spacing: .08em; }
+
+        .tip { position: relative; display: inline-flex; }
+        .tip .tooltip-box { position: absolute; z-index: 5; white-space: nowrap; padding: .4rem .7rem; border-radius: 4px; background: var(--gold-bright); color: var(--void); font-size: .6875rem; font-weight: 700; letter-spacing: .03em; box-shadow: 0 5px 18px rgba(235, 145, 11, .35); }
+        .tip:hover .tooltip-box, .tip:focus-within .tooltip-box { transform: translateY(0) scale(1); opacity: 1; }
+        .tip .t-top { bottom: calc(100% + 9px); left: 50%; translate: -50% 0; }
+        .tip .t-bottom { top: calc(100% + 9px); left: 50%; translate: -50% 0; }
+        .tip .t-right { left: calc(100% + 9px); top: 50%; translate: 0 -50%; }
+        .tip .t-left { right: calc(100% + 9px); top: 50%; translate: 0 -50%; }
+
+        .icon-card { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: .75rem; padding: 1.25rem .5rem; width: 100%; color: var(--steel); background: rgba(15, 10, 4, .7); border: 1px solid var(--line-soft); cursor: copy; transition: border-color .3s, color .3s, background-color .3s; }
+        .icon-card:hover { border-color: var(--gold); color: var(--gold-bright); background: rgba(50, 33, 13, .5); }
+        .icon-card iconify-icon { font-size: 1.75rem; transition: transform .4s var(--ease-elastic); }
+        .icon-card:hover iconify-icon { transform: scale(1.2) rotate(-6deg); }
+        .icon-card span { font: 400 .625rem/1.2 var(--font-mono); color: var(--muted); }
+        .stroke-draw { stroke-dasharray: 60; stroke-dashoffset: 0; }
+        .icon-card:hover .stroke-draw { animation: iconDraw .7s ease-out; }
+        @keyframes iconDraw { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
+
+        .anim-card { display: flex; flex-direction: column; border: 1px solid var(--line-soft); background: rgba(15, 10, 4, .72); transition: border-color .3s; text-align: left; width: 100%; cursor: pointer; }
+        .anim-card:hover { border-color: var(--gold); }
+        .anim-stage { position: relative; height: 150px; display: grid; place-items: center; overflow: hidden; border-bottom: 1px solid var(--line-soft); }
+        .anim-meta { padding: .85rem 1rem 1rem; }
+        .anim-meta p { font: 400 .6875rem/1.5 var(--font-mono); color: var(--steel); }
+        .curve { width: 100%; height: 76px; }
+
+        .toast { position: fixed; left: 50%; bottom: 26px; z-index: 95; translate: -50% 0; padding: .55rem 1rem; border: 1px solid var(--gold); background: var(--obsidian); color: var(--gold-bright); font: 500 .75rem/1.3 var(--font-mono); transform: translateY(16px); opacity: 0; transition: transform .4s var(--ease-elastic), opacity .3s; pointer-events: none; }
+        .toast.on { transform: translateY(0); opacity: 1; }
+
+        .footer-sheet { background: var(--void); }
+
+        /* ==========================================================
+           RESPONSIVO
+           ========================================================== */
+        @media (max-width: 900px) {
+            .hero-copy, .hero-stats { grid-column: span 12; }
+            .hero-stats { grid-template-rows: none; grid-template-columns: repeat(3, 1fr); border-left: 0; border-top: 1px solid var(--line); background: rgba(15, 10, 4, .66); }
+            .hero-stat { flex-direction: column-reverse; align-items: flex-start; padding: .8rem; gap: .4rem; border-bottom: 0; border-right: 1px solid var(--line); }
+            .hero-stat:last-child { border-right: 0; }
+            .hero-stat iconify-icon { display: none; }
+            .hero-grid { min-height: 0; grid-template-rows: 1fr auto; }
+            .hero-copy { min-height: 340px; }
+            .guides { grid-template-columns: 1fr 1fr; }
+            .guides > div:nth-child(3) { display: none; }
+            .type-row, .comp, .comp.flip { grid-template-columns: 1fr; }
+            .cgroups { grid-template-columns: 1fr; }
+            .cgroup { grid-column: auto; }
+            .cgroup-grid { grid-template-columns: repeat(2, 1fr); }
+            .hero-scrim { background: linear-gradient(180deg, rgba(5, 4, 2, .4), rgba(5, 4, 2, .62) 55%, rgba(5, 4, 2, .78)); }
+            .type-row > div { padding-block: .85rem; }
+            .type-row > div:first-child { padding-bottom: 0; }
+            .comp .comp-stage, .comp.flip .comp-stage { order: 0; border-inline: 0; border-bottom: 1px solid var(--line); }
+            .project, .modal-grid { grid-template-columns: 1fr; }
+            .project .media { border-left: 0; border-top: 1px solid var(--line); }
+            .modal-media { min-height: 170px; }
+            .rail { display: none; }
+            .window-edge { opacity: .45; }
+            .nav-link { font-size: .6875rem; letter-spacing: .06em; }
+        }
+
+        @media (hover: none) { .cylinders-lit { display: none; } }
+
+        @media (prefers-reduced-motion: reduce) {
+            html { scroll-behavior: auto !important; }
+            *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+            .streak, .cylinders-lit { display: none; }
+            #embers { display: none; }
+        }
+    </style>
+</head>
+
+<body class="antialiased min-h-screen">
+    <video id="film" src="video/Azzaro.webm" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+    <div class="film-dip" id="filmDip"></div>
+    <canvas id="embers" aria-hidden="true"></canvas>
+    <div class="noise"></div>
+    <div id="tooltip"></div>
+    <div class="toast" id="toast" role="status"></div>
+
+    <!-- Sprite: símbolos de animations-gemini2 + desenhos próprios do filme -->
+    <svg style="display:none">
+        <defs>
+            <symbol id="cyl" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10.5"/><circle cx="12" cy="5.8" r="2.5"/><circle cx="17.4" cy="8.9" r="2.5"/><circle cx="17.4" cy="15.1" r="2.5"/><circle cx="12" cy="18.2" r="2.5"/><circle cx="6.6" cy="15.1" r="2.5"/><circle cx="6.6" cy="8.9" r="2.5"/></symbol>
+            <symbol id="cartridge" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="7.5"/><circle cx="12" cy="12" r="2"/></symbol>
+            <symbol id="drop" viewBox="0 0 24 24"><path d="M12 2.5s7 7.2 7 12a7 7 0 1 1-14 0c0-4.800 7-12 7-12z"/><path d="M8.500 15a3.500 3.500 0 0 0 3.500 3.500"/></symbol>
+            <symbol id="flask" viewBox="0 0 24 24"><path d="M10 2h4v3h-4zM8 5h8l2 3v12a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V8z"/><path d="M6 14h12"/></symbol>
+            <symbol id="smoke" viewBox="0 0 24 24"><path d="M3 8c3-3 5 3 8 0s5-3 8 0"/><path d="M5 14c3-3 5 3 8 0s5-3 6 0"/><path d="M8 20c2-2 4 2 6 0"/></symbol>
+            <symbol id="beam" viewBox="0 0 24 24"><path d="M3 19L21 5"/><circle cx="14" cy="10.500" r="2.200"/><path d="M14 4v2M20 11h-2M14 15v2M8 11h2"/></symbol>
+            <symbol id="nav-dashboard" viewBox="0 0 24 24"><rect height="7" width="7" x="3" y="3"/><rect height="7" width="7" x="14" y="3"/><rect height="7" width="7" x="14" y="14"/><rect height="7" width="7" x="3" y="14"/></symbol>
+            <symbol id="nav-projects" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></symbol>
+            <symbol id="act-add" viewBox="0 0 24 24"><line x1="12" x2="12" y1="5" y2="19"/><line x1="5" x2="19" y1="12" y2="12"/></symbol>
+            <symbol id="act-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></symbol>
+            <symbol id="act-share" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.590" x2="15.420" y1="13.510" y2="17.490"/><line x1="15.410" x2="8.590" y1="6.510" y2="10.490"/></symbol>
+            <symbol id="stat-success" viewBox="0 0 24 24"><path d="M22 11.080V12a10 10 0 1 1-5.930-9.140"/><polyline points="22 4 12 14.010 9 11.010"/></symbol>
+            <symbol id="stat-error" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></symbol>
+            <symbol id="stat-warning" viewBox="0 0 24 24"><path d="M10.290 3.860L1.820 18a2 2 0 0 0 1.710 3h16.940a2 2 0 0 0 1.710-3L13.710 3.860a2 2 0 0 0-3.420 0z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.010" y1="17" y2="17"/></symbol>
+            <symbol id="stat-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="16" y2="12"/><line x1="12" x2="12.010" y1="8" y2="8"/></symbol>
+            <symbol id="sys-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" x2="16.650" y1="21" y2="16.650"/></symbol>
+            <symbol id="sys-close" viewBox="0 0 24 24"><line x1="18" x2="6" y1="6" y2="18"/><line x1="6" x2="18" y1="6" y2="18"/></symbol>
+        </defs>
+    </svg>
+
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <filter id="hollow" x="-3%" y="-6%" width="106%" height="112%" color-interpolation-filters="sRGB">
+            <feMorphology in="SourceAlpha" operator="dilate" radius="1" result="fat" />
+            <feComposite in="fat" in2="SourceAlpha" operator="out" result="ring" />
+            <feFlood flood-color="#E7CC8C" />
+            <feComposite in2="ring" operator="in" />
+        </filter>
+    </svg>
+
+    <!-- Navegação (estrutura do design-system.html base) -->
+    <header class="topbar nav-load" id="topbar">
+        <div class="relative flex justify-between items-center max-w-[1400px] mx-auto px-4 md:px-6 py-5">
+            <nav class="flex items-center gap-5 md:gap-7" aria-label="Fundamentos">
+                <a class="nav-link" href="#typography">Tipografia</a>
+                <a class="nav-link" href="#colors">Cores</a>
+                <a class="nav-link hidden md:block" href="#components">Componentes</a>
+            </nav>
+            <a class="absolute left-1/2 -translate-x-1/2 hidden sm:flex items-center gap-2 group" href="#top" aria-label="Azzaro, início">
+                <svg class="brand-cyl svg-icon text-[var(--gold-bright)]"><use href="#cyl"></use></svg>
+                <span class="font-bold tracking-tighter text-lg gradient-text">AZZARO</span>
+            </a>
+            <div class="flex items-center gap-5 md:gap-7">
+                <a class="nav-link hidden md:block" href="#icons">Ícones</a>
+                <a class="nav-link" href="#motion">Animações</a>
+                <button class="nav-link inline-flex items-center gap-1" id="filmToggle" aria-pressed="false" aria-label="Pausar o filme">
+                    <iconify-icon class="text-base" icon="solar:pause-circle-linear"></iconify-icon>
+                    <span class="hidden lg:inline">Filme</span>
+                </button>
+            </div>
+        </div>
+        <div class="progress" id="progress"></div>
+    </header>
+
+    <nav class="rail" id="rail" aria-label="Seções">
+        <a href="#top" aria-label="Início"></a>
+        <a href="#typography" aria-label="Tipografia"></a>
+        <a href="#colors" aria-label="Cores"></a>
+        <a href="#components" aria-label="Componentes"></a>
+        <a href="#icons" aria-label="Ícones"></a>
+        <a href="#motion" aria-label="Animações"></a>
+    </nav>
+
+    <main>
+        <!-- ================= 0) HERO ================= -->
+        <section class="hero" id="top" data-spy>
+            <div class="hero-light"></div>
+            <div class="hero-top">
+                <div class="hero-scrim"></div>
+                <div class="frame">
+                    <div class="guides"><div></div><div></div><div></div></div>
+                    <div class="hero-grid">
+                        <div class="hero-copy">
+                            <h1 class="hero-title text-difference" id="hero-title">
+                                <span class="text-reveal-wrapper"><span class="text-reveal-content delay-200">Design</span></span>
+                                <span class="text-reveal-wrapper"><span class="text-reveal-content delay-300"><em>System</em></span></span>
+                            </h1>
+                            <p class="reveal delay-500 hero-badge t-body-lg max-w-xl mt-3" style="text-shadow:0 1px 18px rgba(5,4,2,.8)">
+                                Uma folha preta, um filme atrás dela. Cada letra é um furo por onde o ouro passa.
+                            </p>
+                            <div class="mt-5 flex flex-wrap items-center gap-4 reveal delay-500 hero-badge">
+                                <span class="btn-beam-wrap magnetic">
+                                    <span class="halo"></span>
+                                    <a class="btn-beam" href="#components">
+                                        <span class="spin"></span>
+                                        <span class="core"><span class="shine"></span>Ver os componentes
+                                            <iconify-icon class="text-xl" icon="solar:arrow-right-bold-duotone"></iconify-icon></span>
+                                    </a>
+                                </span>
+                                <a class="btn btn-outline" href="#colors">Paleta do filme</a>
+                                <span class="pill-badge">v1.0</span>
+                                <span class="pill-badge">2026</span>
+                            </div>
+                        </div>
+                        <div class="hero-stats glass-panel">
+                            <div class="hero-stat reveal delay-500 group">
+                                <div><div class="text-4xl font-medium tracking-tighter gradient-text" data-count="components">0</div>
+                                    <span class="text-xs font-mono text-[var(--steel)] mt-1 block">COMPONENTES</span></div>
+                                <iconify-icon class="text-3xl text-[var(--gold)] group-hover:text-[var(--gold-bright)] transition-colors" icon="solar:layers-minimalistic-linear"></iconify-icon>
+                            </div>
+                            <div class="hero-stat reveal delay-700 group">
+                                <div><div class="text-4xl font-medium tracking-tighter gradient-text" data-count="colors">0</div>
+                                    <span class="text-xs font-mono text-[var(--steel)] mt-1 block">TOKENS DE COR</span></div>
+                                <iconify-icon class="text-3xl text-[var(--gold)] group-hover:text-[var(--gold-bright)] transition-colors" icon="solar:palette-linear"></iconify-icon>
+                            </div>
+                            <div class="hero-stat reveal delay-700 group">
+                                <div><div class="text-4xl font-medium tracking-tighter gradient-text" data-count="anims">0</div>
+                                    <span class="text-xs font-mono text-[var(--steel)] mt-1 block">ANIMAÇÕES</span></div>
+                                <iconify-icon class="text-3xl text-[var(--gold)] group-hover:text-[var(--gold-bright)] transition-colors" icon="solar:star-fall-linear"></iconify-icon>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Lettering: furo real na folha (máscara SVG), contorno desenhado e brilho -->
+            <svg class="hero-letters" id="heroLetters" viewBox="0 0 1400 296" role="img" aria-label="Azzaro">
+                <defs>
+                    <mask id="m-letters" maskUnits="userSpaceOnUse" x="0" y="0" width="1400" height="296">
+                        <rect width="1400" height="296" fill="#fff" />
+                        <text class="cut" x="700" y="274" text-anchor="middle" textLength="1352" lengthAdjust="spacingAndGlyphs" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="352">AZZARO</text>
+                    </mask>
+                    <mask id="m-outside" maskUnits="userSpaceOnUse" x="0" y="0" width="1400" height="296">
+                        <rect width="1400" height="296" fill="#fff" />
+                        <text x="700" y="274" text-anchor="middle" textLength="1352" lengthAdjust="spacingAndGlyphs" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="352" fill="#000">AZZARO</text>
+                    </mask>
+                    <linearGradient id="g-edge" gradientUnits="userSpaceOnUse" x1="-900" y1="0" x2="0" y2="0">
+                        <stop offset="0" stop-color="#7A5627" />
+                        <stop offset=".46" stop-color="#E7CC8C" />
+                        <stop offset=".5" stop-color="#FBF5DC" />
+                        <stop offset=".54" stop-color="#E7CC8C" />
+                        <stop offset="1" stop-color="#7A5627" />
+                        <animate attributeName="x1" values="-900;1400" dur="6.5s" repeatCount="indefinite" />
+                        <animate attributeName="x2" values="0;2300" dur="6.5s" repeatCount="indefinite" />
+                    </linearGradient>
+                </defs>
+                <rect width="1400" height="296" fill="#050402" mask="url(#m-letters)" />
+                <text x="700" y="274" text-anchor="middle" textLength="1352" lengthAdjust="spacingAndGlyphs" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="352" fill="rgba(186,138,71,.16)">AZZARO</text>
+                <g mask="url(#m-outside)">
+                <text class="glow" x="700" y="274" text-anchor="middle" textLength="1352" lengthAdjust="spacingAndGlyphs" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="352">AZZARO</text>
+                <text class="edge" x="700" y="274" text-anchor="middle" textLength="1352" lengthAdjust="spacingAndGlyphs" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="352">AZZARO</text>
+                </g>
+            </svg>
+
+            <div class="fold-marquee">
+                <div class="marquee-container">
+                    <div class="marquee-content"><span>Fundo: filme fixo</span><span>•</span><span>Easing: cubic-bezier(0.16, 1, 0.3, 1)</span><span>•</span><span>Duração: 1.2s</span><span>•</span><span>Ouro #BA8A47</span><span>•</span><span>Âmbar #EB910B</span><span>•</span></div>
+                    <div class="marquee-content" aria-hidden="true"><span>Fundo: filme fixo</span><span>•</span><span>Easing: cubic-bezier(0.16, 1, 0.3, 1)</span><span>•</span><span>Duração: 1.2s</span><span>•</span><span>Ouro #BA8A47</span><span>•</span><span>Âmbar #EB910B</span><span>•</span></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 1) TIPOGRAFIA ================= -->
+        <section id="typography" data-spy>
+            <div class="section-label"><span>01 / Fundamentos</span><span>Inter · Instrument Serif · JetBrains Mono</span></div>
+            <div class="window" data-window>
+                <div class="window-sheet">
+                    <h2 class="window-title"><span class="text-reveal-wrapper"><span class="text-reveal-content">Tipografia</span></span></h2>
+                </div>
+                <p class="window-note reveal delay-300">Três famílias e treze papéis. O peso decide quanto filme passa pela letra.</p>
+            </div>
+
+            <div class="sheet">
+                <div class="bg-layer">
+                    <div class="grid-bg absolute inset-0" style="-webkit-mask-image:linear-gradient(#000,transparent 70%);mask-image:linear-gradient(#000,transparent 70%)"></div>
+                    <div class="aurora" style="top:-12%;left:-10%"></div>
+                    <div class="aurora b" style="bottom:4%;right:-14%"></div>
+                    <div class="streak"></div>
+                </div>
+                <div class="frame">
+                    <div class="guides"><div></div><div></div><div></div></div>
+
+                    <div class="relative pad divider-b">
+                        <div class="grid md:grid-cols-3 gap-px">
+                            <article class="flashlight-card grid-box reveal">
+                                <span class="comp-label">Primária</span>
+                                <div class="text-6xl font-semibold tracking-tighter gradient-text">Inter</div>
+                                <p class="t-body-sm mt-3 text-[var(--steel)]">Títulos, corpo e interface. O eixo de peso variável é o que dá massa ao furo: peso 800 abre mais filme.</p>
+                                <dl class="vals mt-4"><dt>stack</dt><dd>'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif</dd><dt>pesos</dt><dd>100–900 (variável); uso 400, 500, 600, 700, 800</dd></dl>
+                            </article>
+                            <article class="flashlight-card grid-box reveal delay-100">
+                                <span class="comp-label">Acento</span>
+                                <div class="text-6xl font-serif italic gradient-text">Instrument</div>
+                                <p class="t-body-sm mt-3 text-[var(--steel)]">Uma palavra por tela, no máximo, e legendas. É a voz de perfumaria dentro de um sistema técnico.</p>
+                                <dl class="vals mt-4"><dt>stack</dt><dd>'Instrument Serif', Georgia, 'Times New Roman', serif</dd><dt>pesos</dt><dd>400 regular e itálico</dd></dl>
+                            </article>
+                            <article class="flashlight-card grid-box reveal delay-200">
+                                <span class="comp-label">Monoespaçada</span>
+                                <div class="text-5xl font-mono font-medium tracking-tight gradient-text leading-[60px]">JetBrains</div>
+                                <p class="t-body-sm mt-3 text-[var(--steel)]">Rótulos, tokens, valores e o numerador “01 / Fundamentos” herdado da base.</p>
+                                <dl class="vals mt-4"><dt>stack</dt><dd>'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace</dd><dt>pesos</dt><dd>400, 500, 700</dd></dl>
+                            </article>
+                        </div>
+                        <div class="grid md:grid-cols-12 gap-6 mt-8 reveal">
+                            <div class="md:col-span-4">
+                                <h3 class="sub-title">Carregamento</h3>
+                                <p class="t-body-sm text-[var(--steel)]">Google Fonts por CDN, com <code class="text-[var(--gold-bright)] font-mono">preconnect</code> e <code class="text-[var(--gold-bright)] font-mono">display=swap</code>. Texto aparece na hora na fonte de fallback e troca quando a fonte chega.</p>
+                            </div>
+                            <dl class="spec md:col-span-8 md:grid-cols-3">
+                                <div><dt>Inter</dt><dd><code>wght@100..900</code>, um arquivo variável</dd></div>
+                                <div><dt>Instrument Serif</dt><dd><code>ital@0;1</code>, peso 400</dd></div>
+                                <div><dt>JetBrains Mono</dt><dd><code>wght@400;500;700</code></dd></div>
+                            </dl>
+                        </div>
+                    </div>
+
+                    <!-- A coisa viva: o visitante recorta a própria palavra -->
+                    <div class="relative pad pb-4">
+                        <h3 class="sub-title reveal">Recorte a sua palavra <small>digite, o filme passa por dentro</small></h3>
+                        <div class="grid md:grid-cols-3 gap-6 reveal">
+                            <label class="field"><input id="cutWord" maxlength="14" placeholder=" " value="Ouro" autocomplete="off" /><span class="flabel">Palavra</span><i class="bar"></i></label>
+                            <label class="block"><span class="t-label text-[var(--gold)] flex justify-between">Peso <output id="cutWeightV">800</output></span><input class="gold mt-2" id="cutWeight" type="range" min="100" max="900" step="10" value="800" /></label>
+                            <label class="block"><span class="t-label text-[var(--gold)] flex justify-between">Tracking <output id="cutTrackV">-0.05em</output></span><input class="gold mt-2" id="cutTrack" type="range" min="-8" max="10" step="1" value="-5" /></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="window" id="cutWindow">
+                <div class="window-sheet"><div class="window-title" id="cutOut" aria-live="polite" style="text-align:center;overflow:hidden">Ouro</div></div>
+            </div>
+            <div class="sheet">
+                <div class="bg-layer"><div class="aurora" style="top:30%;left:30%"></div><div class="streak b"></div></div>
+                <div class="frame">
+                    <div class="guides"><div></div><div></div><div></div></div>
+                    <div class="relative pad pb-3"><h3 class="sub-title reveal mb-0">Escala completa <small>valores lidos do CSS computado</small></h3></div>
+                    <div class="relative" id="typeScale" style="border-top:1px solid var(--line)"></div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 2) CORES ================= -->
+        <section id="colors" data-spy>
+            <div class="section-label"><span>02 / Fundamentos</span><span>Amostradas dos frames do filme</span></div>
+            <div class="window" data-window>
+                <div class="window-sheet">
+                    <h2 class="window-title"><span class="text-reveal-wrapper"><span class="text-reveal-content">Cores</span></span></h2>
+                </div>
+                <p class="window-note reveal delay-300">Dezesseis tokens, a maioria tirada dos frames do filme, com contraste calculado.</p>
+            </div>
+            <div class="sheet" data-lit>
+                <div class="bg-layer">
+                    <div class="cylinders"></div><div class="cylinders-lit"></div>
+                    <div class="aurora" style="top:12%;right:-8%"></div>
+                    <div class="aurora b" style="top:56%;left:-10%"></div>
+                    <div class="streak"></div><div class="streak b"></div>
+                </div>
+                <div class="frame">
+                    <div class="guides"><div></div><div></div><div></div></div>
+                    <div class="relative pad" id="colorGroups"></div>
+
+                    <div class="relative pad divider-b" style="border-top:1px solid var(--line)">
+                        <h3 class="sub-title reveal">Gradientes <small>quem participa de cada um</small></h3>
+                        <div class="grid md:grid-cols-2 gap-px" id="gradients"></div>
+                    </div>
+
+                    <div class="relative pad">
+                        <h3 class="sub-title reveal">Uso por contexto <small>contraste calculado por WCAG 2.1 sobre void</small></h3>
+                        <div class="overflow-x-auto no-scrollbar reveal" tabindex="0" aria-label="Tabela de uso por contexto">
+                            <table class="ctx-table" id="ctxTable"></table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 3) COMPONENTES ================= -->
+        <section id="components" data-spy>
+            <div class="section-label"><span>03 / Elementos de interface</span><span>Todos funcionam: clique, digite, passe o mouse</span></div>
+            <div class="window" data-window>
+                <div class="window-sheet">
+                    <h2 class="window-title"><span class="text-reveal-wrapper"><span class="text-reveal-content">Componentes</span></span></h2>
+                </div>
+            </div>
+            <div class="sheet" data-lit>
+                <div class="bg-layer">
+                    <div class="cylinders"></div><div class="cylinders-lit"></div>
+                    <div class="aurora" style="top:4%;left:-12%"></div>
+                    <div class="aurora b" style="top:40%;right:-14%"></div>
+                    <div class="aurora" style="bottom:6%;left:24%"></div>
+                    <div class="streak"></div>
+                </div>
+                <div class="frame">
+                    <div class="guides"><div></div><div></div><div></div></div>
+
+                    <!-- BUTTONS -->
+                    <div class="comp stacked relative">
+                        <div class="comp-stage">
+                            <h3 class="sub-title reveal">Buttons <small>.btn · .btn-beam</small></h3>
+                            <div class="flex flex-wrap items-center gap-5 reveal delay-100">
+                                <span class="btn-beam-wrap magnetic"><span class="halo"></span>
+                                    <button class="btn-beam"><span class="spin"></span><span class="core"><span class="shine"></span>Beam<iconify-icon class="text-xl" icon="solar:arrow-right-bold-duotone"></iconify-icon></span></button></span>
+                                <button class="btn btn-foil beam-button glow-on-hover">Primário<iconify-icon class="text-lg" icon="solar:arrow-right-linear"></iconify-icon></button>
+                                <button class="btn btn-outline">Secundário</button>
+                                <a class="btn btn-ghost" href="#components">Link de texto<iconify-icon class="text-base" icon="solar:arrow-right-up-linear"></iconify-icon></a>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-5 mt-6 reveal delay-200">
+                                <button class="btn btn-foil" id="asyncBtn" style="min-width:178px">Salvar</button>
+                                <button class="btn btn-icon" aria-label="Compartilhar"><svg class="w-5 h-5 svg-icon"><use href="#act-share"></use></svg></button>
+                                <button class="card group !h-[46px] !w-[46px] !rounded-full" id="dlBtn" aria-label="Baixar">
+                                    <span class="relative w-6 h-6 flex items-center justify-center">
+                                        <svg class="w-5 h-5 absolute dl-arrow-group svg-icon text-[var(--gold-bright)]"><use href="#act-download"></use></svg>
+                                        <svg class="w-full h-full absolute rotate-[-90deg]" viewBox="0 0 24 24"><circle class="dl-progress" cx="12" cy="12" r="10" fill="none" stroke="#E7CC8C" stroke-width="2"></circle></svg>
+                                        <svg class="w-5 h-5 absolute dl-check text-[var(--success)]" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="3" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    </span>
+                                </button>
+                                <button class="btn btn-foil" disabled>Desabilitado</button>
+                                <button class="btn btn-outline" disabled>Desabilitado</button>
+                            </div>
+                        </div>
+                        <div class="comp-spec reveal" data-spec="buttons"></div>
+                    </div>
+
+                    <!-- INPUTS -->
+                    <div class="comp flip relative">
+                        <div class="comp-stage">
+                            <h3 class="sub-title reveal">Inputs <small>.field · .checkbox-box · .toggle-track</small></h3>
+                            <form class="grid md:grid-cols-2 gap-x-6 gap-y-3 reveal delay-100" id="demoForm" novalidate>
+                                <label class="field"><input placeholder=" " value="" /><span class="flabel">Nome</span><i class="bar"></i><small class="t-helper">Como aparece no pedido</small></label>
+                                <label class="field" id="emailField"><input id="emailInput" type="email" placeholder=" " /><span class="flabel">E-mail</span><i class="bar"></i><small class="t-helper" id="emailHelp">Saia do campo para validar</small></label>
+                                <label class="field"><select aria-label="Concentração"><option>Eau de Toilette</option><option>Eau de Parfum</option><option>Parfum</option></select><span class="flabel">Concentração</span><i class="bar"></i><small></small></label>
+                                <label class="field"><input placeholder=" " disabled value="Campo bloqueado" /><span class="flabel">Desabilitado</span><i class="bar"></i><small></small></label>
+                                <label class="field md:col-span-2"><textarea placeholder=" "></textarea><span class="flabel">Mensagem</span><i class="bar"></i></label>
+                            </form>
+                            <div class="flex flex-wrap items-center gap-8 mt-5 reveal delay-200">
+                                <label class="flex items-center gap-3 cursor-pointer group">
+                                    <span class="relative"><input class="peer sr-only" type="checkbox" checked />
+                                        <span class="checkbox-box w-5 h-5 border border-[var(--bronze)] bg-[var(--void)] transition-all duration-200 flex items-center justify-center"><svg class="w-3.5 h-3.5 text-[var(--void)] transform scale-0 transition-transform duration-200" fill="none" stroke="currentColor" stroke-linecap="square" stroke-width="4" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></span></span>
+                                    <span class="text-sm text-[var(--steel)] group-hover:text-[var(--ivory)] transition-colors">Checkbox</span>
+                                </label>
+                                <label class="flex items-center gap-3 cursor-pointer"><input class="peer sr-only" type="checkbox" /><span class="toggle-track"></span><span class="text-sm text-[var(--steel)]">Toggle</span></label>
+                                <label class="flex items-center gap-3 flex-1 min-w-[180px]"><span class="text-sm text-[var(--steel)]">Range</span><input class="gold" type="range" min="0" max="100" value="62" /></label>
+                            </div>
+                        </div>
+                        <div class="comp-spec reveal" data-spec="inputs"></div>
+                    </div>
+
+                    <!-- CARDS -->
+                    <div class="comp relative">
+                        <div class="comp-stage">
+                            <h3 class="sub-title reveal">Cards <small>.project · .flashlight-card · .stack-card</small></h3>
+                            <article class="project group reveal delay-100">
+                                <div class="p-8 flex flex-col justify-center">
+                                    <div class="flex items-center gap-3 mb-4"><span class="text-xs font-mono text-[var(--muted)]">01</span><div class="h-px w-8 bg-[var(--bronze)]"></div><span class="t-h6 text-[var(--gold)]" style="font-size:.75rem">Fumaça</span></div>
+                                    <h4 class="t-h3 mb-3">Project card</h4>
+                                    <p class="t-body-sm text-[var(--steel)]">Do preto e branco ao ouro: o still do filme acorda com o hover do cartão pai.</p>
+                                </div>
+                                <div class="media"><video class="still" muted playsinline preload="metadata" src="video/Azzaro.webm#t=3.5" aria-hidden="true"></video></div>
+                            </article>
+                            <div class="grid md:grid-cols-2 gap-5 mt-5">
+                                <div class="flashlight-card grid-box reveal cursor-pointer">
+                                    <svg class="w-8 h-8 svg-icon text-[var(--gold-bright)] mb-3"><use href="#smoke"></use></svg>
+                                    <h4 class="t-h5 mb-1">Flashlight card</h4>
+                                    <p class="t-body-sm text-[var(--steel)]">Um foco dourado segue o cursor por dentro do cartão.</p>
+                                </div>
+                                <div class="grid-box glow-on-hover reveal delay-100 cursor-pointer">
+                                    <svg class="w-8 h-8 svg-icon text-[var(--gold-bright)] mb-3"><use href="#beam"></use></svg>
+                                    <h4 class="t-h5 mb-1">Glow card</h4>
+                                    <p class="t-body-sm text-[var(--steel)]">Sobe 2px e acende o halo âmbar, como o clarão do filme.</p>
+                                </div>
+                            </div>
+                            <div class="mt-5 reveal">
+                                <div class="stack" id="stack" aria-roledescription="carrossel">
+                                    <div class="stack-card" data-pos="0"><video class="still" muted playsinline preload="metadata" src="video/Azzaro.webm#t=1.5" aria-hidden="true"></video><div class="cap"><span class="t-h5">Metal</span><p class="t-helper">00:01, macro do cilindro</p></div></div>
+                                    <div class="stack-card" data-pos="1"><video class="still" muted playsinline preload="metadata" src="video/Azzaro.webm#t=3.9" aria-hidden="true"></video><div class="cap"><span class="t-h5">Fumaça</span><p class="t-helper">00:03, ouro em suspensão</p></div></div>
+                                    <div class="stack-card" data-pos="2"><video class="still" muted playsinline preload="metadata" src="video/Azzaro.webm#t=7" aria-hidden="true"></video><div class="cap"><span class="t-h5">Cartuchos</span><p class="t-helper">00:07, a parede de latão</p></div></div>
+                                </div>
+                                <div class="flex justify-center gap-4">
+                                    <button class="btn btn-icon" id="stackPrev" aria-label="Anterior"><iconify-icon class="text-xl" icon="solar:arrow-left-linear"></iconify-icon></button>
+                                    <button class="btn btn-icon" id="stackNext" aria-label="Próximo"><iconify-icon class="text-xl" icon="solar:arrow-right-linear"></iconify-icon></button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comp-spec reveal" data-spec="cards"></div>
+                    </div>
+
+                    <!-- NAVBARS -->
+                    <div class="comp flip relative">
+                        <div class="comp-stage">
+                            <h3 class="sub-title reveal">Navbars <small>.topbar · .mini-float · .rail</small></h3>
+                            <div class="space-y-5">
+                                <div class="reveal delay-100"><span class="comp-label">Barra de três zonas</span>
+                                    <div class="mini-nav">
+                                        <div class="flex gap-5"><a class="nav-link is-active" href="#components">Linha</a><a class="nav-link" href="#components">Notas</a></div>
+                                        <a class="absolute left-1/2 -translate-x-1/2 flex items-center gap-2 group" href="#components"><svg class="brand-cyl svg-icon text-[var(--gold-bright)]"><use href="#cyl"></use></svg><span class="font-bold tracking-tighter gradient-text hidden sm:inline">AZZARO</span></a>
+                                        <div class="flex gap-5"><a class="nav-link" href="#components">Conta</a></div>
+                                    </div></div>
+                                <div class="reveal delay-200"><span class="comp-label">Pílula flutuante</span>
+                                    <div class="mini-float" id="miniFloat"><a class="on" href="#components">Visão</a><a href="#components">Tokens</a><a href="#components">Motion</a></div></div>
+                                <div class="grid md:grid-cols-2 gap-5 reveal delay-300">
+                                    <div><span class="comp-label">Trilha de caminho</span>
+                                        <nav class="flex items-center text-xs font-mono" aria-label="Exemplo de breadcrumb"><a class="text-[var(--muted)] hover:text-[var(--ivory)] transition-colors" href="#components">INÍCIO</a><iconify-icon class="mx-2 text-[var(--muted)]" icon="solar:alt-arrow-right-linear"></iconify-icon><a class="text-[var(--muted)] hover:text-[var(--ivory)] transition-colors" href="#components">LINHA</a><iconify-icon class="mx-2 text-[var(--muted)]" icon="solar:alt-arrow-right-linear"></iconify-icon><span class="text-[var(--gold-bright)]">NOTAS</span></nav></div>
+                                    <div><span class="comp-label">Progresso</span>
+                                        <div class="flex items-center max-w-xs">
+                                            <span class="w-8 h-8 rounded-full border border-[var(--gold-bright)] bg-[rgba(231,204,140,.12)] flex items-center justify-center text-[var(--gold-bright)]"><iconify-icon icon="solar:check-read-linear"></iconify-icon></span>
+                                            <span class="flex-1 h-px bg-[var(--gold-bright)] mx-2"></span>
+                                            <span class="w-8 h-8 rounded-full border border-[var(--ivory)] flex items-center justify-center" style="box-shadow:0 0 12px rgba(235,145,11,.5)"><span class="w-2 h-2 rounded-full bg-[var(--ivory)] animate-pulse"></span></span>
+                                            <span class="flex-1 h-px bg-[var(--bronze)] mx-2"></span>
+                                            <span class="w-8 h-8 rounded-full border border-[var(--bronze)] flex items-center justify-center text-xs text-[var(--muted)]">3</span>
+                                        </div></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comp-spec reveal" data-spec="navbars"></div>
+                    </div>
+
+                    <!-- SECTIONS -->
+                    <div class="comp stacked relative">
+                        <div class="comp-stage">
+                            <h3 class="sub-title reveal">Sections <small>.section-label · .window · .sheet</small></h3>
+                            <div class="reveal delay-100" style="border:1px solid var(--line)">
+                                <div class="section-label" style="border-block:0;font-size:.625rem"><span>00 / Rótulo</span><span>Contexto</span></div>
+                                <div class="window"><div class="window-sheet" style="padding:.75rem 1rem .9rem"><div style="font-size:clamp(2rem,6vw,4.75rem);font-weight:800;letter-spacing:-.05em;line-height:1.05">Janela</div></div></div>
+                                <div class="sheet" style="background:rgba(15,10,4,.9)">
+                                    <div class="bg-layer"><div class="streak" style="animation-duration:6s"></div></div>
+                                    <div class="relative grid grid-cols-12 gap-2 p-4 h-[120px]">
+                                        <div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div><div class="col-span-1 rounded-sm bg-[rgba(186,138,71,.16)]"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="comp-spec reveal" data-spec="sections"></div>
+                    </div>
+
+                    <!-- MODALS -->
+                    <div class="comp stacked relative">
+                        <div class="comp-stage">
+                            <h3 class="sub-title reveal">Modals <small>&lt;dialog&gt; nativo · .modal</small></h3>
+                            <p class="t-body text-[var(--steel)] max-w-lg mb-6 reveal delay-100">Abre com blur-in, prende o foco e fecha com Esc, com o botão ou com clique fora.</p>
+                            <div class="flex flex-wrap gap-5 reveal delay-200">
+                                <button class="btn btn-foil beam-button glow-on-hover" data-open="modalFilm">Abrir modal com filme</button>
+                                <button class="btn btn-outline" data-open="modalConfirm">Abrir confirmação</button>
+                            </div>
+                        </div>
+                        <div class="comp-spec reveal" data-spec="modals"></div>
+                    </div>
+
+                    <!-- BADGES -->
+                    <div class="comp stacked relative">
+                        <div class="comp-stage">
+                            <h3 class="sub-title reveal">Badges <small>.badge · .pill-badge · .ribbon</small></h3>
+                            <div class="flex flex-wrap items-center gap-3 reveal delay-100">
+                                <span class="badge badge-foil">Foil</span><span class="badge badge-hollow">Vazado</span><span class="badge badge-glass">Vidro</span>
+                                <span class="badge badge-status" style="--c:var(--success)"><i class="pulse-dot"></i>Disponível</span>
+                                <span class="badge badge-status" style="--c:var(--warning)">Aguardando</span>
+                                <span class="badge badge-status" style="--c:var(--error)">Esgotado</span>
+                                <span class="badge badge-status" style="--c:var(--info)">Novo lote</span>
+                                <span class="relative inline-flex p-1"><iconify-icon class="text-2xl text-[var(--steel)]" icon="solar:bell-linear"></iconify-icon><span class="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-[var(--amber)] text-[var(--void)] text-[10px] font-bold flex items-center justify-center">3</span></span>
+                            </div>
+                            <div class="relative mt-6 h-[110px] overflow-hidden grid place-items-center reveal delay-200" style="border:1px solid var(--line);background:rgba(15,10,4,.72)"><span class="ribbon">NOVO</span><span class="t-label text-[var(--muted)]">Item em destaque</span></div>
+                        </div>
+                        <div class="comp-spec reveal" data-spec="badges"></div>
+                    </div>
+
+                    <!-- TOOLTIPS -->
+                    <div class="comp stacked relative" style="border-bottom:0">
+                        <div class="comp-stage">
+                            <h3 class="sub-title reveal">Tooltips <small>.tooltip-box · #tooltip</small></h3>
+                            <div class="flex flex-wrap items-center justify-center gap-x-20 gap-y-14 py-10 reveal delay-100">
+                                <span class="tip"><button class="btn btn-icon" aria-describedby="t1" aria-label="Topo"><iconify-icon class="text-lg" icon="solar:arrow-up-linear"></iconify-icon></button><span class="tooltip-box t-top" id="t1" role="tooltip">Topo</span></span>
+                                <span class="tip"><button class="btn btn-icon" aria-describedby="t2" aria-label="Direita"><iconify-icon class="text-lg" icon="solar:arrow-right-linear"></iconify-icon></button><span class="tooltip-box t-right" id="t2" role="tooltip">Direita</span></span>
+                                <span class="tip"><button class="btn btn-icon" aria-describedby="t3" aria-label="Base"><iconify-icon class="text-lg" icon="solar:arrow-down-linear"></iconify-icon></button><span class="tooltip-box t-bottom" id="t3" role="tooltip">Base</span></span>
+                                <span class="tip"><button class="btn btn-icon" aria-describedby="t4" aria-label="Esquerda"><iconify-icon class="text-lg" icon="solar:arrow-left-linear"></iconify-icon></button><span class="tooltip-box t-left" id="t4" role="tooltip">Esquerda</span></span>
+                                <span class="badge badge-hollow cursor-help" data-follow="Tooltip que segue o cursor">Passe aqui</span>
+                            </div>
+                        </div>
+                        <div class="comp-spec reveal" data-spec="tooltips"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 4) ÍCONES ================= -->
+        <section id="icons" data-spy>
+            <div class="section-label"><span>04 / Assets</span><span>Solar via Iconify · Sprite SVG local</span></div>
+            <div class="window" data-window>
+                <div class="window-sheet">
+                    <h2 class="window-title"><span class="text-reveal-wrapper"><span class="text-reveal-content">Ícones</span></span></h2>
+                </div>
+                <p class="window-note reveal delay-300">Solar para a interface. Um sprite local para o que só existe neste filme.</p>
+            </div>
+            <div class="sheet" data-lit id="iconSheet">
+                <div class="bg-layer">
+                    <div class="grid-bg absolute inset-0"></div>
+                    <div class="cylinders-lit"></div>
+                    <div class="aurora" style="top:-10%;right:10%"></div>
+                    <div class="streak b"></div>
+                </div>
+                <div class="frame">
+                    <div class="guides"><div></div><div></div><div></div></div>
+                    <div class="relative pad divider-b">
+                        <div class="flex flex-wrap items-center justify-between gap-4 mb-5 reveal">
+                            <h3 class="sub-title mb-0">Solar <small>clique para copiar o nome</small></h3>
+                            <div class="mini-float" id="iconStyle"><a class="on" href="#icons" data-v="linear">Linear</a><a href="#icons" data-v="bold-duotone">Duotone</a></div>
+                        </div>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2" id="iconGrid"></div>
+                    </div>
+                    <div class="relative pad divider-b">
+                        <h3 class="sub-title reveal">Desenhados a partir do filme <small>sprite local, funciona offline</small></h3>
+                        <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2" id="spriteGrid"></div>
+                    </div>
+                    <div class="relative pad">
+                        <div class="grid md:grid-cols-12 gap-8 items-end reveal">
+                            <div class="md:col-span-5">
+                                <h3 class="sub-title">Tamanhos</h3>
+                                <div class="flex items-end gap-6 text-[var(--gold-bright)]">
+                                    <span class="text-center"><svg class="w-4 h-4 svg-icon mx-auto"><use href="#cyl"></use></svg><small class="t-label block mt-2 text-[var(--muted)]">16</small></span>
+                                    <span class="text-center"><svg class="w-5 h-5 svg-icon mx-auto"><use href="#cyl"></use></svg><small class="t-label block mt-2 text-[var(--muted)]">20</small></span>
+                                    <span class="text-center"><svg class="w-6 h-6 svg-icon mx-auto"><use href="#cyl"></use></svg><small class="t-label block mt-2 text-[var(--muted)]">24</small></span>
+                                    <span class="text-center"><svg class="w-8 h-8 svg-icon mx-auto"><use href="#cyl"></use></svg><small class="t-label block mt-2 text-[var(--muted)]">32</small></span>
+                                    <span class="text-center"><svg class="w-12 h-12 svg-icon mx-auto"><use href="#cyl"></use></svg><small class="t-label block mt-2 text-[var(--muted)]">48</small></span>
+                                </div>
+                            </div>
+                            <dl class="spec md:col-span-7 md:grid-cols-3">
+                                <div><dt>Grade</dt><dd>24px, traço 1.5px, pontas redondas</dd></div>
+                                <div><dt>Cor</dt><dd><code>currentColor</code>: herda o texto</dd></div>
+                                <div><dt>Hover</dt><dd>Escala 1.14 e cor <code>--gold-bright</code>, .2s</dd></div>
+                            </dl>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 5) ANIMAÇÕES ================= -->
+        <section id="motion" data-spy>
+            <div class="section-label"><span>05 / Interação</span><span>Clique em um cartão para repetir</span></div>
+            <div class="window" data-window>
+                <div class="window-sheet">
+                    <h2 class="window-title"><span class="text-reveal-wrapper"><span class="text-reveal-content">Animações</span></span></h2>
+                </div>
+                <p class="window-note reveal delay-300">Surgir, brilhar, responder. Tudo pode ser repetido com um clique.</p>
+            </div>
+            <div class="sheet" data-lit>
+                <div class="bg-layer">
+                    <div class="cylinders"></div><div class="cylinders-lit"></div>
+                    <div class="aurora" style="top:8%;left:18%"></div>
+                    <div class="aurora b" style="bottom:0;right:-6%"></div>
+                    <div class="streak"></div><div class="streak b"></div>
+                </div>
+                <div class="frame">
+                    <div class="guides"><div></div><div></div><div></div></div>
+                    <div class="relative pad divider-b">
+                        <h3 class="sub-title reveal">Curvas e tempos</h3>
+                        <div class="grid md:grid-cols-3 gap-5">
+                            <div class="grid-box reveal"><span class="comp-label">--ease-out</span>
+                                <svg class="curve" viewBox="0 0 200 76" fill="none"><path class="draw-path" d="M4 72 C 36 6, 64 4, 196 4" stroke="#E7CC8C" stroke-width="2" /></svg>
+                                <p class="t-helper mt-2">cubic-bezier(0.16, 1, 0.3, 1). Surgimentos e transições longas.</p></div>
+                            <div class="grid-box reveal delay-100"><span class="comp-label">--ease-elastic</span>
+                                <svg class="curve" viewBox="0 0 200 76" fill="none"><path class="draw-path" d="M4 72 C 72 -28, 118 -2, 196 14" stroke="#E7CC8C" stroke-width="2" /></svg>
+                                <p class="t-helper mt-2">cubic-bezier(0.34, 1.56, 0.64, 1). Tooltips, toggles, confirmações.</p></div>
+                            <div class="grid-box reveal delay-200"><span class="comp-label">Durações</span>
+                                <dl class="vals text-sm mt-1"><dt>--dur-fast</dt><dd>.2s, cor e ícone</dd><dt>--dur-base</dt><dd>.5s, preenchimento e hover</dd><dt>--dur-slow</dt><dd>1.2s, lettering</dd><dt>movimento reduzido</dt><dd>filme parado, sem deslocamento</dd></dl></div>
+                        </div>
+                    </div>
+                    <div class="relative pad divider-b">
+                        <h3 class="sub-title reveal">Biblioteca</h3>
+                        <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3" id="animGrid"></div>
+                    </div>
+                    <div class="relative pad">
+                        <h3 class="sub-title reveal">Carregamento <small>KINETIC, em ouro</small></h3>
+                        <div class="grid grid-cols-2 md:grid-cols-5 gap-3 reveal">
+                            <div class="card"><svg class="animate-[spin_1s_linear_infinite]" width="40" height="40" viewBox="0 0 40 40"><circle cx="20" cy="20" r="16" fill="none" stroke="#32210D" stroke-width="3"></circle><circle cx="20" cy="20" r="16" fill="none" stroke="#E7CC8C" stroke-dasharray="100" stroke-dashoffset="60" stroke-linecap="round" stroke-width="3"></circle></svg><span class="label">Spinner</span></div>
+                            <div class="card"><div class="relative flex items-center justify-center w-12 h-12"><span class="absolute w-3 h-3 bg-[var(--amber)] rounded-full z-10 shadow-[0_0_10px_#EB910B]"></span><span class="absolute w-full h-full border border-[var(--amber)] rounded-full opacity-0 animate-[radar_2s_infinite]"></span><span class="absolute w-full h-full border border-[var(--amber)] rounded-full opacity-0 animate-[radar_2s_0.6s_infinite]"></span></div><span class="label">Pulse</span></div>
+                            <div class="card"><svg class="w-10 h-10 animate-[spin_2s_linear_infinite]" viewBox="25 25 50 50"><circle cx="50" cy="50" r="20" fill="none" stroke="#32210D" stroke-width="4"></circle><circle cx="50" cy="50" r="20" fill="none" stroke="#E7CC8C" stroke-linecap="round" stroke-width="4" style="animation:ring-dash 1.5s ease-in-out infinite"></circle></svg><span class="label">Ring</span></div>
+                            <div class="card"><svg width="60" height="30" viewBox="0 0 60 30"><path d="M15,15 C15,5 25,5 30,15 C35,25 45,25 45,15 C45,5 35,5 30,15 C25,25 15,25 15,15 Z" fill="none" stroke="#EB910B" stroke-dasharray="100" stroke-linecap="round" stroke-width="2" style="animation:dash-draw 2s linear infinite"></path></svg><span class="label">Infinity</span></div>
+                            <div class="card col-span-2 md:col-span-1"><svg class="animate-[spin_1.8s_steps(6)_infinite] svg-icon text-[var(--gold-bright)]" width="40" height="40"><use href="#cyl"></use></svg><span class="label">Cilindro</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Rodapé: o nome volta inteiro -->
+    <footer>
+        <div class="section-divider"></div>
+        <div class="window" data-window>
+            <div class="window-sheet" style="padding-inline:0">
+                <div style="font-size:21.5vw;font-weight:800;letter-spacing:-.05em;line-height:.98;text-align:center;white-space:nowrap">AZZARO</div>
+            </div>
+        </div>
+        <div class="footer-sheet">
+            <div class="max-w-[1400px] mx-auto flex flex-wrap justify-between gap-3 px-6 py-6 text-xs font-mono uppercase text-[var(--muted)]">
+                <span>Design system de estudo, derivado de digital-architect, gemini e gemini2</span>
+                <span>Filme: assets/video/Azzaro.webm</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Modais -->
+    <dialog class="modal" id="modalFilm" aria-labelledby="modalFilmTitle">
+        <div class="modal-grid">
+            <div class="modal-media"><video class="still" muted playsinline loop preload="metadata" src="video/Azzaro.webm#t=3" aria-hidden="true"></video></div>
+            <div class="p-7">
+                <div class="flex items-start justify-between gap-4 mb-3">
+                    <h3 class="t-h3 gradient-text" id="modalFilmTitle">Modal com filme</h3>
+                    <button class="btn btn-icon !w-10 !min-h-10" data-close aria-label="Fechar"><svg class="w-4 h-4 svg-icon"><use href="#sys-close"></use></svg></button>
+                </div>
+                <p class="t-body-sm text-[var(--steel)] mb-5">O vídeo começa ao abrir e para ao fechar. O foco fica preso dentro do diálogo.</p>
+                <label class="field mb-5"><input placeholder=" " /><span class="flabel">Seu e-mail</span><i class="bar"></i></label>
+                <div class="flex flex-wrap gap-4"><button class="btn btn-foil beam-button" data-close>Confirmar</button><button class="btn btn-ghost" data-close>Agora não</button></div>
+            </div>
+        </div>
+    </dialog>
+    <dialog class="modal" id="modalConfirm" aria-labelledby="modalConfirmTitle" style="width:min(440px,calc(100vw - 2rem))">
+        <div class="p-7">
+            <svg class="w-8 h-8 svg-icon text-[var(--warning)] mb-3"><use href="#stat-warning"></use></svg>
+            <h3 class="t-h4 mb-2" id="modalConfirmTitle">Remover este item?</h3>
+            <p class="t-body-sm text-[var(--steel)] mb-5">Variante compacta para decisões curtas: uma pergunta, duas saídas.</p>
+            <div class="flex flex-wrap gap-4"><button class="btn btn-foil" data-close>Remover</button><button class="btn btn-outline" data-close>Cancelar</button></div>
+        </div>
+    </dialog>
+
+    <script>
+        /* ---------- Dados ---------- */
+        const TYPE_ROLES = [
+            ['Display', 't-display', 'Ouro'],
+            ['H1', 't-h1', 'Fumaça e metal'],
+            ['H2', 't-h2', 'Sob a luz'],
+            ['H3', 't-h3', 'Cilindro de seis câmaras'],
+            ['H4', 't-h4', 'Latão escovado'],
+            ['H5', 't-h5', 'Âmbar em suspensão'],
+            ['H6', 't-h6', 'Notas de saída'],
+            ['Body LG', 't-body-lg', 'O texto corrido fica sempre em marfim, nunca em cinza. Aqui o peso é 400 e a entrelinha é generosa.'],
+            ['Body', 't-body', 'Tamanho padrão de leitura. Serve para descrições, formulários e tudo que precisa ser lido por inteiro.'],
+            ['Body SM', 't-body-sm', 'Texto de apoio em cartões e especificações, sem ficar abaixo de 14px.'],
+            ['Caption', 't-caption', 'Legenda em serifa itálica, para imagens e filmes.'],
+            ['Label', 't-label', 'Rótulo monoespaçado'],
+            ['Helper', 't-helper', 'Texto de ajuda em formulários e notas curtas.']
+        ];
+
+        const COLORS = [
+            { group: 'Primária', role: 'primary', name: 'Gold', token: '--gold', hex: '#BA8A47', src: 'fumaça, 00:03', use: 'Bordas ativas, rótulos, ícones de apoio.' },
+            { group: 'Primária', role: 'primary', name: 'Gold Bright', token: '--gold-bright', hex: '#E7CC8C', src: 'clarão, 00:02', use: 'Ação principal, foco, lettering.' },
+            { group: 'Secundária', role: 'secondary', name: 'Steel', token: '--steel', hex: '#D1C7B6', src: 'frasco, 00:07', use: 'Texto secundário, metal.' },
+            { group: 'Secundária', role: 'secondary', name: 'Bronze', token: '--bronze', hex: '#7A5627', src: 'cartuchos, 00:05', use: 'Bordas em repouso, trilhas.' },
+            { group: 'Acento', role: 'accent', name: 'Amber', token: '--amber', hex: '#EB910B', src: 'líquido, 00:03', use: 'Glow, contadores, um destaque por tela.' },
+            { group: 'Acento', role: 'accent', name: 'Amber Deep', token: '--amber-deep', hex: '#C06D11', src: 'fundo do líquido, 00:03', use: 'Sombra do âmbar, preenchimentos.' },
+            { group: 'Decorativas', role: 'decorative', name: 'Umber', token: '--umber', hex: '#32210D', src: 'sombra, 00:03', use: 'Hover de superfície e xadrez de opacidade.' },
+            { group: 'Decorativas', role: 'decorative', name: 'Copper', token: '--copper', hex: '#A36D2D', src: 'fumaça, 00:03', use: 'Texturas, cilindros e detalhes de fundo.' },
+            { group: 'Neutras', role: 'neutral', name: 'Void', token: '--void', hex: '#050402', src: 'preto do macro, 00:00', use: 'A folha. Fundo principal.' },
+            { group: 'Neutras', role: 'neutral', name: 'Obsidian', token: '--obsidian', hex: '#0F0A04', src: 'fundo da fumaça, 00:03', use: 'Superfícies elevadas.' },
+            { group: 'Neutras', role: 'neutral', name: 'Muted', token: '--muted', hex: '#A79580', src: 'transição, 00:05', use: 'Rótulos e notas, nunca texto corrido.' },
+            { group: 'Neutras', role: 'neutral', name: 'Ivory', token: '--ivory', hex: '#FBF5DC', src: 'núcleo do clarão, 00:02', use: 'Texto corrido e títulos.' },
+            { group: 'Feedback', role: 'feedback', name: 'Success', token: '--success', hex: '#8CBF6E', src: 'definida no sistema', use: 'Confirmação, disponível.' },
+            { group: 'Feedback', role: 'feedback', name: 'Warning', token: '--warning', hex: '#F4AC10', src: 'brilho do líquido, 00:03', use: 'Atenção, aguardando.' },
+            { group: 'Feedback', role: 'feedback', name: 'Error', token: '--error', hex: '#E8604C', src: 'definida no sistema', use: 'Erro, esgotado.' },
+            { group: 'Feedback', role: 'feedback', name: 'Info', token: '--info', hex: '#8DB6D1', src: 'definida no sistema', use: 'Avisos neutros.' }
+        ];
+
+        const GRADIENTS = [
+            ['--grad-foil', 'Foil', 'Bronze, Gold, Ivory, Gold Bright', 'Lettering, badges, barra de foco e progresso.'],
+            ['--grad-liquid', 'Líquido', 'Warning, Amber, Bronze', 'Medidores e preenchimentos.'],
+            ['--grad-steel', 'Aço', 'Umber, Steel, Ivory', 'Reflexo de metal em divisores e frasco.'],
+            ['--grad-ember', 'Brasa', 'Amber, Bronze', 'Aurora de fundo em todas as seções.']
+        ];
+
+        const CONTEXT = [
+            ['Texto', ['Ivory', 'Corpo e títulos'], ['Steel', 'Secundário'], ['Muted', 'Rótulos curtos']],
+            ['Fundo', ['Void', 'Folha'], ['Obsidian', 'Superfície'], ['Umber', 'Hover de superfície']],
+            ['Borda', ['Bronze', 'Repouso'], ['Gold', 'Hover'], ['Gold Bright', 'Foco']],
+            ['Hover', ['Ivory', 'Ação primária'], ['Gold Bright', 'Link e ação secundária'], ['Amber', 'Halo a 28%']],
+            ['Ativo', ['Gold Bright', 'Item atual'], ['Gold', 'Pressionado, escala .97'], ['Amber', 'Toggle ligado']],
+            ['Desabilitado', ['Gold Bright', 'Opacidade 40%'], ['Bronze', 'Opacidade 40%'], ['Muted', 'Sem hover']]
+        ];
+
+        const SPECS = {
+            buttons: [['Anatomia', 'Contêiner, rótulo, ícone opcional. No beam, um conic-gradient gira atrás de um núcleo opaco e deixa 1.5px de borda.'], ['Medidas', 'Altura 46px, padding 12×28px, raio 999px. Ícone 46×46px.'], ['Tipo', 'Inter 600, 14px. Outline em caixa alta, 12px, tracking .1em.'], ['Tokens', '<code>--gold-bright</code> <code>--ivory</code> <code>--void</code> <code>--amber</code>'], ['Estados', 'Repouso, hover (feixe e halo), foco (anel de 2px), ativo (.97), carregando, sucesso, desabilitado (40%).'], ['Movimento', 'Feixe .6s, preenchimento .5s <code>--ease-out</code>, giro do beam 2.4s, atração magnética de até 8px.'], ['Classes', '<code>.btn .btn-foil .btn-outline .btn-ghost .btn-icon .btn-beam .beam-button .glow-on-hover</code>']],
+            inputs: [['Anatomia', 'Rótulo flutuante, campo, barra de foco, texto de ajuda.'], ['Medidas', 'Altura 54px, padding 22×14px, raio 4px só no topo. Checkbox 20px, toggle 48×26px.'], ['Tipo', 'Valor em 16px para não dar zoom no iOS. Rótulo encolhe para 74%.'], ['Tokens', '<code>--bronze</code> em repouso, <code>--grad-foil</code> no foco, <code>--error</code> e <code>--success</code> na validação.'], ['Estados', 'Vazio, hover, foco, preenchido, erro (tremor .5s), válido, desabilitado.'], ['Movimento', 'Rótulo .35s, barra .6s da esquerda para a direita, toggle elástico .4s.'], ['Classes', '<code>.field .flabel .bar .checkbox-box .toggle-track input.gold</code>']],
+            cards: [['Anatomia', 'Project: conteúdo e mídia lado a lado. Flashlight e glow: ícone, título, texto. Stack: três camadas com setas.'], ['Medidas', 'Project mínimo 250px, padding 32px. Grid-box padding 24px. Raio 0: mídia com canto reto.'], ['Tokens', '<code>--line</code> <code>--obsidian</code> <code>--umber</code>'], ['Estados', 'Repouso, hover (título anda 8px, still ganha cor e escala 1.06), foco.'], ['Movimento', 'Still .7s, foco de luz segue <code>--mouse-x/y</code>, stack .7s <code>--ease-out</code>.'], ['Classes', '<code>.project .flashlight-card .grid-box .glow-on-hover .stack-card</code>']],
+            navbars: [['Anatomia', 'Três zonas: links à esquerda, marca centralizada, links e ação à direita.'], ['Medidas', 'Altura 65px, padding 24×20px, conteúdo em 1400px, fixa no topo.'], ['Tipo', 'Inter 500, 12px, caixa alta, tracking .1em.'], ['Tokens', 'Fundo void a 72% com blur de 16px, <code>--line</code>, progresso <code>--grad-foil</code>.'], ['Estados', 'Link normal, hover e ativo: sublinhado que entra pela esquerda e sai pela direita.'], ['Movimento', 'Entrada <code>.nav-load</code> .8s, marca gira 180° em .7s, scrollspy marca a seção atual.'], ['Classes', '<code>.topbar .nav-load .nav-link .mini-float .rail</code>']],
+            sections: [['Anatomia', 'Rótulo mono, janela com título vazado, folha com fundo animado e conteúdo na moldura.'], ['Grade', '12 colunas, moldura de 1400px, guias em 3/6/3. Padding 24–48px.'], ['Janela', '<code>.window-sheet</code> usa <code>mix-blend-mode: multiply</code>: preto esconde, branco deixa o filme passar. Nenhum ancestral pode criar contexto de empilhamento.'], ['Fundos', 'Combinar <code>.aurora</code>, <code>.cylinders</code>, <code>.streak</code> e <code>.grid-bg</code>. Vizinhas não repetem a mesma combinação.'], ['Movimento', 'Guias crescem 1.8s, título sobe por máscara 1.2s, conteúdo em <code>.reveal</code> com delays.']],
+            modals: [['Anatomia', 'Backdrop, painel, mídia opcional, título, conteúdo, ações, fechar.'], ['Medidas', 'Largura até 760px (compacto 440px), margem de 16px, raio 0, borda <code>--gold</code>.'], ['Tokens', '<code>--obsidian</code>, halo <code>--amber</code>, backdrop void a 72% com blur de 10px.'], ['Estados', 'Fechado, abrindo, aberto. Fecha com Esc, botão ou clique no backdrop.'], ['Movimento', '<code>animationIn</code> .55s: sobe 30px saindo do desfoque.'], ['Acessibilidade', '<code>&lt;dialog&gt;</code> com <code>showModal()</code>, foco preso e devolvido, título em <code>aria-labelledby</code>.']],
+            badges: [['Anatomia', 'Texto curto, ponto ou ícone opcional.'], ['Medidas', 'Padding 4×11px, raio 999px, JetBrains Mono 500, 11px, caixa alta.'], ['Tokens', '<code>--grad-foil</code>, <code>--c</code> recebe a cor de feedback.'], ['Estados', 'Repouso, hover sobe 2px. Status pode pulsar.'], ['Movimento', 'Foil em 7s, pulso radar 2s, hover .3s elástico.'], ['Classes', '<code>.badge .badge-foil .badge-hollow .badge-glass .badge-status .pill-badge .ribbon</code>']],
+            tooltips: [['Anatomia', 'Gatilho, caixa com rótulo curto, ligação por <code>aria-describedby</code>.'], ['Medidas', 'Padding 6×11px, raio 4px, distância de 9px, Inter 700, 11px.'], ['Tokens', 'Fundo <code>--gold-bright</code>, texto <code>--void</code>, sombra <code>--amber</code>.'], ['Estados', 'Oculto, visível no hover e no foco do teclado. Quatro posições, mais a variante que segue o cursor.'], ['Movimento', 'Sobe 10px e cresce de .95 a 1 em .3s <code>--ease-elastic</code>.'], ['Classes', '<code>.tip .tooltip-box .t-top .t-right .t-bottom .t-left #tooltip</code>']]
+        };
+
+        const SOLAR = ['atom', 'layers-minimalistic', 'palette', 'star-fall', 'clock-circle', 'cup-star', 'arrow-right-up', 'check-circle', 'bell', 'magnifer', 'bag-3', 'heart', 'user', 'settings', 'share', 'bookmark', 'play', 'pause', 'file-download', 'globe', 'pen-new-square', 'scanner', 'record-circle', 'stars-minimalistic'];
+        const SPRITE = [['cyl', 'cilindro'], ['cartridge', 'cartucho'], ['drop', 'gota'], ['flask', 'frasco'], ['smoke', 'fumaça'], ['beam', 'feixe'], ['nav-dashboard', 'painel'], ['nav-projects', 'camadas'], ['act-add', 'somar'], ['act-download', 'baixar'], ['act-share', 'compartilhar'], ['stat-success', 'sucesso'], ['stat-error', 'erro'], ['stat-warning', 'atenção'], ['stat-info', 'info'], ['sys-search', 'buscar']];
+
+        const ANIMS = [
+            ['.reveal', '1s · ease-out · scroll', '<div class="reveal t-h4 gradient-text">Surgir</div>'],
+            ['.delay-*', '.1–.7s · stagger', '<div class="flex gap-2"><i class="reveal w-5 h-12 bg-[var(--gold)]"></i><i class="reveal delay-100 w-5 h-12 bg-[var(--gold)]"></i><i class="reveal delay-200 w-5 h-12 bg-[var(--gold)]"></i><i class="reveal delay-300 w-5 h-12 bg-[var(--gold)]"></i><i class="reveal delay-500 w-5 h-12 bg-[var(--gold)]"></i></div>'],
+            ['.text-reveal', '1.2s · máscara', '<div class="t-h2 reveal-host"><span class="text-reveal-wrapper"><span class="text-reveal-content">Máscara</span></span></div>'],
+            ['animationIn', '.8s · blur 10px', '<div class="blur-in t-h4">Desfoque</div>'],
+            ['.text-clip-anim', '.9s · por letra', '<div class="text-clip-anim t-h2"><span>O</span><span style="animation-delay:.07s">u</span><span style="animation-delay:.14s">r</span><span style="animation-delay:.21s">o</span></div>'],
+            ['.gradient-text', '7s · foil em loop', '<div class="gradient-text t-h2 font-bold">Foil</div>'],
+            ['.text-hollow', '.6s · hover', '<div class="text-hollow t-h2 font-extrabold">Vazado</div>'],
+            ['.draw-path', '1.5s · traço', '<svg width="130" height="60" viewBox="0 0 130 60" fill="none"><path class="draw-path" d="M4 50C30 4 44 4 62 30s34 28 64-22" stroke="#E7CC8C" stroke-width="2"/></svg>'],
+            ['.grow-bar', '1s · escala Y', '<div class="flex items-end gap-1.5 h-20"><i class="grow-bar w-4 h-8 bg-[var(--bronze)]"></i><i class="grow-bar w-4 h-14 bg-[var(--gold)]" style="animation-delay:.08s"></i><i class="grow-bar w-4 h-10 bg-[var(--gold)]" style="animation-delay:.16s"></i><i class="grow-bar w-4 h-20 bg-[var(--gold-bright)]" style="animation-delay:.24s"></i><i class="grow-bar w-4 h-16 bg-[var(--amber)]" style="animation-delay:.32s"></i></div>'],
+            ['.beam-button', '.6s · feixe', '<button class="btn btn-foil beam-button" tabindex="-1">Passe aqui</button>'],
+            ['.btn-beam', '2.4s · conic', '<span class="btn-beam"><span class="spin"></span><span class="core">Beam</span></span>'],
+            ['float · morph', '8s · loop', '<div class="w-20 h-20" style="background:var(--grad-liquid);animation:float 4s ease-in-out infinite,morph 8s ease-in-out infinite"></div>'],
+            ['shake', '.5s · erro', '<div class="t-h5 text-[var(--error)]" style="animation:shake .5s ease-in-out .3s">Inválido</div>'],
+            ['pop', '.3s · confirmação', '<svg class="w-10 h-10 text-[var(--amber)]" style="animation:pop .4s ease-out .3s" fill="currentColor" viewBox="0 0 24 24"><path d="M4.3 6.3a4.500 4.500 0 000 6.400L12 20.400l7.700-7.700a4.500 4.500 0 00-6.400-6.400L12 7.600l-1.300-1.300a4.500 4.500 0 00-6.400 0z"/></svg>'],
+            ['.streak', '11s · feixe de fundo', '<div class="streak" style="animation-duration:3s;top:50%"></div>'],
+            ['.aurora', '26s · brasa', '<div class="aurora" style="width:150px;animation-duration:4s;opacity:.9;filter:blur(14px)"></div>']
+        ];
+
+        /* ---------- Utilidades de cor ---------- */
+        const hexRgb = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+        const rgbHsl = ([r, g, b]) => {
+            r /= 255; g /= 255; b /= 255;
+            const M = Math.max(r, g, b), m = Math.min(r, g, b), d = M - m, l = (M + m) / 2;
+            let h = 0;
+            if (d) h = M === r ? ((g - b) / d) % 6 : M === g ? (b - r) / d + 2 : (r - g) / d + 4;
+            h = Math.round(h * 60); if (h < 0) h += 360;
+            const s = d ? d / (1 - Math.abs(2 * l - 1)) : 0;
+            return [h, Math.round(s * 100), Math.round(l * 100)];
+        };
+        const lum = rgb => { const [r, g, b] = rgb.map(v => { v /= 255; return v <= .03928 ? v / 12.92 : ((v + .055) / 1.055) ** 2.4; }); return .2126 * r + .7152 * g + .0722 * b; };
+        const ratio = (a, b) => { const [x, y] = [lum(hexRgb(a)), lum(hexRgb(b))].sort((p, q) => q - p); return (x + .05) / (y + .05); };
+        const grade = r => r >= 7 ? 'AAA' : r >= 4.5 ? 'AA' : r >= 3 ? 'AA grande' : 'decorativa';
+        const byName = n => COLORS.find(c => c.name === n);
+
+        let toastTimer;
+        function toast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg; t.classList.add('on');
+            clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('on'), 1600);
+        }
+        function copy(text) {
+            try { navigator.clipboard.writeText(text).catch(() => { }); } catch (e) { }
+            toast('Copiado: ' + text);
+        }
+
+        /* ---------- Renderização ---------- */
+        function renderType() {
+            const host = document.getElementById('typeScale');
+            host.innerHTML = TYPE_ROLES.map(([n, c, s], i) => `
+                <div class="type-row reveal">
+                    <div class="t-label text-[var(--gold)]">${n}<br><span class="text-[var(--muted)] normal-case tracking-normal">.${c}</span></div>
+                    <div class="${c} truncate-off">${s}</div>
+                    <div><dl class="type-spec" data-of="${i}"></dl></div>
+                </div>`).join('');
+            fillTypeSpecs();
+        }
+        function fillTypeSpecs() {
+            document.querySelectorAll('#typeScale .type-row').forEach(row => {
+                const sample = row.children[1], cs = getComputedStyle(sample), px = parseFloat(cs.fontSize);
+                const lh = cs.lineHeight === 'normal' ? 'normal' : (parseFloat(cs.lineHeight) / px).toFixed(2);
+                const ls = cs.letterSpacing === 'normal' ? '0' : (parseFloat(cs.letterSpacing) / px).toFixed(3) + 'em';
+                const rows = [['font-family', cs.fontFamily.split(',')[0].replace(/"/g, '')], ['font-weight', cs.fontWeight], ['font-size', px.toFixed(0) + 'px / ' + (px / 16).toFixed(3).replace(/\.?0+$/, '') + 'rem'], ['line-height', lh], ['letter-spacing', ls], ['text-transform', cs.textTransform]];
+                row.querySelector('.type-spec').innerHTML = rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('');
+            });
+        }
+
+        function renderColors() {
+            const groups = [...new Set(COLORS.map(c => c.group))];
+            document.getElementById('colorGroups').innerHTML = '<div class="cgroups">' + groups.map(g => `
+                <div class="cgroup" style="--n:${COLORS.filter(c => c.group === g).length}">
+                <h3 class="sub-title reveal">${g} <small>${COLORS.find(c => c.group === g).role}</small></h3>
+                <div class="cgroup-grid">
+                ${COLORS.filter(c => c.group === g).map((c, i) => {
+                const rgb = hexRgb(c.hex), hsl = rgbHsl(rgb), onVoid = ratio(c.hex, '#050402'), onIvory = ratio(c.hex, '#FBF5DC');
+                const ink = lum(rgb) > .25 ? '#050402' : '#FBF5DC';
+                return `<article class="swatch reveal delay-${[100, 200, 300, 500][i % 4]}">
+                    <button class="swatch-chip" style="background:${c.hex};color:${ink}" data-copy="${c.hex}" aria-label="Copiar ${c.hex}">
+                        <span class="font-bold">${c.name}</span><span class="t-label" style="letter-spacing:0">${c.token}</span>
+                    </button>
+                    <div class="ops" title="Opacidades 100 a 10">${[100, 80, 60, 40, 20, 10].map(o => `<i style="background:rgba(${rgb.join(',')},${o / 100})" data-follow="${c.token} a ${o}%"></i>`).join('')}</div>
+                    <div class="p-3.5 flex-1 flex flex-col gap-2.5">
+                        <dl class="vals"><dt>HEX</dt><dd>${c.hex}</dd><dt>RGB</dt><dd>${rgb.join(', ')}</dd><dt>HSL</dt><dd>${hsl[0]}, ${hsl[1]}%, ${hsl[2]}%</dd><dt>origem</dt><dd>${c.src}</dd></dl>
+                        <p class="t-body-sm text-[var(--steel)]">${c.use}</p>
+                        <div class="flex flex-wrap gap-1.5 mt-auto">
+                            <span class="aa">void ${onVoid.toFixed(1)} <b>${grade(onVoid)}</b></span>
+                            <span class="aa">ivory ${onIvory.toFixed(1)} <b>${grade(onIvory)}</b></span>
+                        </div>
+                    </div></article>`;
+            }).join('')}</div></div>`).join('') + '</div>';
+
+            document.getElementById('gradients').innerHTML = GRADIENTS.map(([t, n, who, use], i) => `
+                <article class="grid-box reveal delay-${[100, 200, 300, 500][i]}">
+                    <div class="h-24 mb-3" style="background:var(${t});background-size:${i ? '100%' : '220% 100%'};${i ? '' : 'animation:foilMove 7s linear infinite'}"></div>
+                    <div class="flex justify-between gap-3 mb-1"><span class="t-h5">${n}</span><code class="font-mono text-xs text-[var(--gold-bright)]">${t}</code></div>
+                    <p class="t-helper">Participam: ${who}. ${use}</p>
+                </article>`).join('');
+
+            const dot = n => { const c = byName(n); return `<i class="dot" style="background:${c.hex}"></i>`; };
+            const cell = ([n, note]) => `${dot(n)}${n}<span class="block t-helper text-[var(--muted)]">${note}</span>`;
+            const ctr = r => { const c = byName(r[1][0]); const v = ratio(c.hex, '#050402'); return r[0] === 'Fundo' ? 'Superfície, sem meta' : `${v.toFixed(1)}:1 ${grade(v)}`; };
+            document.getElementById('ctxTable').innerHTML = `<thead><tr><th>Contexto</th><th>Principal</th><th>Secundário</th><th>Apoio</th><th>Contraste do principal</th></tr></thead><tbody>${CONTEXT.map(r => `<tr><td>${r[0]}</td><td>${cell(r[1])}</td><td>${cell(r[2])}</td><td>${cell(r[3])}</td><td class="font-mono text-xs">${ctr(r)}</td></tr>`).join('')}</tbody>`;
+        }
+
+        function renderSpecs() {
+            document.querySelectorAll('[data-spec]').forEach(el => {
+                el.innerHTML = '<dl class="spec">' + SPECS[el.dataset.spec].map(([k, v]) => `<div><dt>${k}</dt><dd>${v}</dd></div>`).join('') + '</dl>';
+            });
+        }
+
+        function renderIcons(style = 'linear') {
+            document.getElementById('iconGrid').innerHTML = SOLAR.map((n, i) => `
+                <button class="icon-card animate-on-scroll blur-in" style="animation-delay:${(i % 8) * .05}s" data-copy="solar:${n}-${style}">
+                    <iconify-icon icon="solar:${n}-${style}"></iconify-icon><span>${n}</span></button>`).join('');
+            observeInView();
+        }
+        function renderSprite() {
+            document.getElementById('spriteGrid').innerHTML = SPRITE.map(([id, n], i) => `
+                <button class="icon-card animate-on-scroll blur-in" style="animation-delay:${(i % 8) * .05}s" data-copy="#${id}">
+                    <svg class="w-7 h-7 icon-base stroke-draw"><use href="#${id}"></use></svg><span>${n}</span></button>`).join('');
+        }
+
+        function play(stage, html) {
+            stage.innerHTML = html;
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                stage.querySelectorAll('.reveal').forEach(e => e.classList.add('active'));
+                stage.querySelectorAll('.reveal-host').forEach(e => e.classList.add('reveal-active'));
+            }));
+        }
+        function renderAnims() {
+            const host = document.getElementById('animGrid');
+            host.innerHTML = ANIMS.map(([n, d], i) => `
+                <div class="anim-card reveal delay-${[100, 200, 300, 500][i % 4]}" role="button" tabindex="0" data-anim="${i}" aria-label="Repetir ${n}">
+                    <div class="anim-stage"></div>
+                    <div class="anim-meta"><div class="font-mono text-sm text-[var(--gold-bright)]">${n}</div><p>${d}</p></div>
+                </div>`).join('');
+            const io = new IntersectionObserver(es => es.forEach(e => {
+                if (e.isIntersecting) { const c = e.target; play(c.querySelector('.anim-stage'), ANIMS[c.dataset.anim][2]); io.unobserve(c); }
+            }), { threshold: .2 });
+            host.querySelectorAll('.anim-card').forEach(c => {
+                io.observe(c);
+                const go = () => play(c.querySelector('.anim-stage'), ANIMS[c.dataset.anim][2]);
+                c.addEventListener('click', go);
+                c.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); go(); } });
+            });
+        }
+
+        /* ---------- Observers, mesmos dos templates ---------- */
+        function observeInView() {
+            if (!window.__inViewIO) {
+                window.__inViewIO = new IntersectionObserver(es => es.forEach(e => {
+                    if (e.isIntersecting) { e.target.classList.add('animate'); window.__inViewIO.unobserve(e.target); }
+                }), { threshold: .2 });
+            }
+            document.querySelectorAll('.animate-on-scroll:not(.animate)').forEach(el => window.__inViewIO.observe(el));
+        }
+        function observeReveals() {
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.classList.add('active');
+                        const wrappers = entry.target.querySelectorAll('.text-reveal-wrapper');
+                        if (wrappers.length > 0 || entry.target.classList.contains('text-reveal-wrapper')) entry.target.classList.add('reveal-active');
+                    }
+                });
+            }, { root: null, rootMargin: '0px', threshold: .08 });
+            document.querySelectorAll('.reveal, .window').forEach(el => observer.observe(el));
+        }
+
+        /* ---------- Janelas: contorno sobreposto ao furo ---------- */
+        function buildWindows() {
+            document.querySelectorAll('[data-window]').forEach(w => {
+                const sheet = w.querySelector('.window-sheet');
+                const edge = document.createElement('div');
+                edge.className = 'window-edge'; edge.setAttribute('aria-hidden', 'true');
+                edge.style.padding = getComputedStyle(sheet).padding;
+                const c = sheet.firstElementChild.cloneNode(true);
+                const div = document.createElement('div');
+                div.className = c.className; div.style.cssText = c.style.cssText; div.innerHTML = c.innerHTML;
+                edge.appendChild(div); w.appendChild(edge);
+            });
+        }
+
+        /* ---------- Filme ---------- */
+        function setupFilm(reduce) {
+            const film = document.getElementById('film'), dip = document.getElementById('filmDip');
+            const btn = document.getElementById('filmToggle');
+            const setIcon = () => {
+                const paused = film.paused;
+                btn.querySelector('iconify-icon').setAttribute('icon', paused ? 'solar:play-circle-linear' : 'solar:pause-circle-linear');
+                btn.setAttribute('aria-pressed', String(paused));
+                btn.setAttribute('aria-label', paused ? 'Reproduzir o filme' : 'Pausar o filme');
+            };
+            if (reduce) { film.removeAttribute('autoplay'); film.addEventListener('loadedmetadata', () => { film.currentTime = 3.6; film.pause(); setIcon(); }); film.pause(); }
+            btn.addEventListener('click', () => { film.paused ? film.play() : film.pause(); });
+            film.addEventListener('play', setIcon);
+            film.addEventListener('pause', () => { setIcon(); dip.classList.remove('on'); });
+            /* mergulho no preto para esconder o corte do loop */
+            film.addEventListener('timeupdate', () => {
+                if (film.duration && film.currentTime > film.duration - .45) dip.classList.add('on');
+                else if (film.currentTime < 1) dip.classList.remove('on');
+            });
+            window.addEventListener('mousemove', e => {
+                film.style.setProperty('--fx', ((e.clientX / innerWidth - .5) * -14).toFixed(1) + 'px');
+                film.style.setProperty('--fy', ((e.clientY / innerHeight - .5) * -10).toFixed(1) + 'px');
+            }, { passive: true });
+        }
+
+        /* ---------- Brasas: as partículas do filme em canvas ---------- */
+        function setupEmbers() {
+            const cv = document.getElementById('embers'), ctx = cv.getContext('2d');
+            let W, H; const dpr = Math.min(devicePixelRatio || 1, 2);
+            const size = () => { W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+            size(); addEventListener('resize', size);
+            const P = Array.from({ length: innerWidth < 700 ? 24 : 54 }, () => spawn(true));
+            function spawn(any) { return { x: Math.random() * innerWidth, y: any ? Math.random() * innerHeight : innerHeight + 10, r: Math.random() * 1.5 + .4, v: Math.random() * .4 + .12, a: Math.random() * .55 + .15, s: Math.random() * 6.28 }; }
+            (function tick() {
+                if (!document.hidden) {
+                    ctx.clearRect(0, 0, W, H);
+                    for (const p of P) {
+                        p.y -= p.v; p.s += .012; p.x += Math.sin(p.s) * .28;
+                        if (p.y < -12) Object.assign(p, spawn(false));
+                        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 6.3);
+                        ctx.fillStyle = `rgba(231,204,140,${p.a * (.6 + .4 * Math.sin(p.s * 2))})`;
+                        ctx.fill();
+                    }
+                }
+                requestAnimationFrame(tick);
+            })();
+        }
+
+        /* ---------- Interações ---------- */
+        function setupCutter() {
+            const out = document.getElementById('cutOut'), word = document.getElementById('cutWord');
+            const w = document.getElementById('cutWeight'), t = document.getElementById('cutTrack');
+            const fit = () => {
+                out.style.fontSize = ''; out.style.transform = '';
+                const inner = out.scrollWidth, avail = out.clientWidth;
+                if (inner > avail) out.style.fontSize = (parseFloat(getComputedStyle(out).fontSize) * avail / inner * .98) + 'px';
+            };
+            const paint = (r) => r.style.setProperty('--v', ((r.value - r.min) / (r.max - r.min) * 100) + '%');
+            const sync = () => {
+                out.textContent = word.value.trim() || 'Azzaro';
+                out.style.fontWeight = w.value;
+                out.style.letterSpacing = (t.value / 100) + 'em';
+                document.getElementById('cutWeightV').textContent = w.value;
+                document.getElementById('cutTrackV').textContent = (t.value / 100) + 'em';
+                paint(w); paint(t); fit();
+            };
+            [word, w, t].forEach(el => el.addEventListener('input', sync));
+            addEventListener('resize', fit);
+            sync();
+            document.fonts && document.fonts.ready.then(sync);
+            document.querySelectorAll('input[type=range].gold').forEach(r => { paint(r); r.addEventListener('input', () => paint(r)); });
+        }
+
+        function setupInteractions() {
+            document.addEventListener('mousemove', e => {
+                const fl = e.target.closest && e.target.closest('.flashlight-card');
+                if (fl) { const b = fl.getBoundingClientRect(); fl.style.setProperty('--mouse-x', `${e.clientX - b.left}px`); fl.style.setProperty('--mouse-y', `${e.clientY - b.top}px`); }
+                const f = e.target.closest && e.target.closest('[data-follow]'), tip = document.getElementById('tooltip');
+                if (f) { tip.textContent = f.dataset.follow; tip.style.opacity = 1; tip.style.transform = `translate(${e.clientX + 14}px,${e.clientY + 16}px)`; }
+                else tip.style.opacity = 0;
+            }, { passive: true });
+
+            document.querySelectorAll('[data-lit]').forEach(s => {
+                const lit = s.querySelector('.cylinders-lit'); if (!lit) return;
+                s.addEventListener('mousemove', e => { const b = s.getBoundingClientRect(); lit.style.setProperty('--sx', (e.clientX - b.left) + 'px'); lit.style.setProperty('--sy', (e.clientY - b.top) + 'px'); }, { passive: true });
+            });
+
+            const hero = document.getElementById('top');
+            hero.addEventListener('mousemove', e => { const b = hero.getBoundingClientRect(); hero.style.setProperty('--mx', (e.clientX - b.left) + 'px'); hero.style.setProperty('--my', (e.clientY - b.top) + 'px'); }, { passive: true });
+
+            document.querySelectorAll('.magnetic').forEach(m => {
+                m.addEventListener('mousemove', e => { const b = m.getBoundingClientRect(); m.style.transform = `translate(${(e.clientX - b.left - b.width / 2) * .12}px,${(e.clientY - b.top - b.height / 2) * .3}px)`; });
+                m.addEventListener('mouseleave', () => { m.style.transform = ''; });
+                m.style.transition = 'transform .4s var(--ease-out)';
+            });
+
+            document.addEventListener('click', e => {
+                const c = e.target.closest('[data-copy]');
+                if (c) copy(c.dataset.copy);
+                const a = e.target.closest('a[href="#components"], a[href="#icons"]');
+                if (a && a.closest('.mini-nav, .mini-float, nav[aria-label="Exemplo de breadcrumb"]')) e.preventDefault();
+            });
+
+            const asyncBtn = document.getElementById('asyncBtn');
+            asyncBtn.addEventListener('click', () => {
+                if (asyncBtn.dataset.busy) return; asyncBtn.dataset.busy = 1;
+                asyncBtn.innerHTML = '<svg class="w-5 h-5 animate-[spin_2s_linear_infinite]" viewBox="25 25 50 50"><circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="5" style="animation:ring-dash 1.5s ease-in-out infinite"></circle></svg>Salvando';
+                setTimeout(() => { asyncBtn.innerHTML = 'Salvo<iconify-icon class="text-lg" icon="solar:check-circle-bold"></iconify-icon>'; asyncBtn.style.background = 'var(--success)'; }, 1300);
+                setTimeout(() => { asyncBtn.innerHTML = 'Salvar'; asyncBtn.style.background = ''; delete asyncBtn.dataset.busy; }, 3000);
+            });
+
+            const dl = document.getElementById('dlBtn');
+            dl.addEventListener('click', () => {
+                if (dl.classList.contains('downloading') || dl.classList.contains('download-done')) return;
+                dl.classList.add('downloading');
+                setTimeout(() => { dl.classList.remove('downloading'); dl.classList.add('download-done'); setTimeout(() => dl.classList.remove('download-done'), 2200); }, 1200);
+            });
+
+            const email = document.getElementById('emailInput'), ef = document.getElementById('emailField'), eh = document.getElementById('emailHelp');
+            email.addEventListener('blur', () => {
+                ef.classList.remove('is-error', 'is-ok'); void ef.offsetWidth;
+                if (!email.value) { eh.textContent = 'Saia do campo para validar'; return; }
+                const ok = email.checkValidity();
+                ef.classList.add(ok ? 'is-ok' : 'is-error');
+                eh.textContent = ok ? 'E-mail válido' : 'Falta um domínio, como nome@site.com';
+            });
+            document.getElementById('demoForm').addEventListener('submit', e => e.preventDefault());
+
+            const cards = [...document.querySelectorAll('#stack .stack-card')];
+            let top = 0;
+            const place = () => cards.forEach((c, i) => { c.dataset.pos = (i - top + cards.length) % cards.length; });
+            document.getElementById('stackNext').addEventListener('click', () => { top = (top + 1) % cards.length; place(); });
+            document.getElementById('stackPrev').addEventListener('click', () => { top = (top - 1 + cards.length) % cards.length; place(); });
+
+            const single = id => document.querySelectorAll(id + ' a').forEach(a => a.addEventListener('click', () => {
+                document.querySelectorAll(id + ' a').forEach(x => x.classList.toggle('on', x === a));
+                if (a.dataset.v) renderIcons(a.dataset.v);
+            }));
+            single('#miniFloat'); single('#iconStyle');
+
+            document.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', () => {
+                const d = document.getElementById(b.dataset.open); d.showModal();
+                const v = d.querySelector('video'); if (v) v.play().catch(() => { });
+            }));
+            document.querySelectorAll('dialog.modal').forEach(d => {
+                d.addEventListener('click', e => { if (e.target === d || e.target.closest('[data-close]')) d.close(); });
+                d.addEventListener('close', () => { const v = d.querySelector('video'); if (v) v.pause(); });
+            });
+
+            document.querySelectorAll('.project').forEach(p => {
+                const v = p.querySelector('video');
+                p.addEventListener('mouseenter', () => v.play().catch(() => { }));
+                p.addEventListener('mouseleave', () => { v.pause(); v.currentTime = 3.5; });
+            });
+
+            /* scrollspy, progresso e parallax */
+            const spy = [...document.querySelectorAll('[data-spy]')];
+            const rail = [...document.querySelectorAll('#rail a')];
+            const links = [...document.querySelectorAll('.topbar .nav-link[href^="#"]')];
+            const progress = document.getElementById('progress');
+            const onScroll = () => {
+                const y = scrollY, max = document.documentElement.scrollHeight - innerHeight;
+                progress.style.setProperty('--p', max > 0 ? (y / max).toFixed(4) : 0);
+                let cur = 0; spy.forEach((s, i) => { if (s.getBoundingClientRect().top < innerHeight * .45) cur = i; });
+                rail.forEach((a, i) => a.classList.toggle('on', i === cur));
+                links.forEach(a => a.classList.toggle('is-active', a.getAttribute('href') === '#' + spy[cur].id));
+                document.querySelectorAll('.parallax-element').forEach(el => { el.style.transform = `translateY(${y * (el.dataset.speed || .1)}px)`; });
+            };
+            addEventListener('scroll', onScroll, { passive: true }); onScroll();
+        }
+
+        function countUp() {
+            const values = { components: Object.keys(SPECS).length, colors: COLORS.length, anims: ANIMS.length };
+            document.querySelectorAll('[data-count]').forEach(el => {
+                const end = values[el.dataset.count], t0 = performance.now();
+                (function step(t) {
+                    const p = Math.min((t - t0) / 1400, 1), e = 1 - Math.pow(1 - p, 4);
+                    el.textContent = String(Math.round(end * e)).padStart(2, '0');
+                    if (p < 1) requestAnimationFrame(step);
+                })(t0);
+            });
+        }
+
+        /* ---------- Abertura: o cilindro gira, a folha abre, as letras se desenham ---------- */
+        function intro(reduce) {
+            const letters = document.getElementById('heroLetters');
+            const start = () => {
+                document.getElementById('topbar').classList.add('loaded');
+                document.getElementById('hero-title').classList.add('reveal-active');
+                document.querySelectorAll('.hero-badge, .hero-stat').forEach(el => el.classList.add('active'));
+                letters.classList.add('drawn');
+                setTimeout(() => letters.classList.add('opened'), reduce ? 0 : 1300);
+                countUp();
+            };
+            if (reduce) { start(); return; }
+            const c = document.createElement('div');
+            c.className = 'curtain'; c.setAttribute('aria-hidden', 'true');
+            c.innerHTML = '<i></i><i></i><svg class="svg-icon"><use href="#cyl"></use></svg>';
+            document.body.appendChild(c);
+            setTimeout(() => { c.classList.add('open'); start(); }, 1150);
+            setTimeout(() => c.remove(), 2400);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+            renderType(); renderColors(); renderSpecs(); renderSprite(); renderIcons(); renderAnims();
+            buildWindows();
+            observeReveals(); observeInView();
+            setupFilm(reduce);
+            if (!reduce) setupEmbers();
+            setupCutter();
+            setupInteractions();
+            intro(reduce);
+            if (document.fonts) document.fonts.ready.then(fillTypeSpecs);
+        });
+    </script>
+</body>
+
+</html>

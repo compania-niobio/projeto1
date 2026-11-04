@@ -1,0 +1,59 @@
+---
+// Botões do site Azzaro. O texto do botão vai no <slot />.
+//
+// variant="beam"    → link com feixe dourado giratório (.btn-beam), ex.: "Descubra a fragrância"
+// variant="outline" → <button> com contorno e ícone de play (.btn-outline), ex.: "Navegue na experiência"
+// variant="buy"     → CTA de compra externo (.d-cta), abre em nova aba, ex.: "Comprar agora"
+//
+// Atributos extras (data-goto, data-scroll-to, aria-*…) vão para o elemento clicável.
+// As classes e ids são usados por site-renovado-azzaro/js (main.js, desire.js, polish.js) — não renomear.
+interface Props {
+    variant: 'beam' | 'outline' | 'buy';
+    href?: string;
+    id?: string;
+    /** Só em variant="buy": id do invólucro magnético (ex.: dCtaWrap). */
+    wrapId?: string;
+    /** Só em variant="buy": complemento lido apenas por leitores de tela (ex.: "Azzaro Wanted"). */
+    srLabel?: string;
+    [attr: string]: unknown;
+}
+
+const { variant, href, id, wrapId, srLabel, ...attrs } = Astro.props;
+---
+{variant === 'beam' && (
+    <span class="btn-beam-wrap magnetic">
+        <span class="halo" aria-hidden="true"></span>
+        <a class="btn-beam" href={href} id={id} {...attrs}>
+            <span class="spin" aria-hidden="true"></span>
+            <span class="core"><span class="shine" aria-hidden="true"></span><slot />
+                <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+            </span>
+        </a>
+    </span>
+)}
+
+{variant === 'outline' && (
+    <button class="btn btn-outline magnetic" id={id} type="button" {...attrs}>
+        <svg class="play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.5v13l11-6.5z"/></svg>
+        <slot />
+    </button>
+)}
+
+{variant === 'buy' && (
+    <div class="d-cta-wrap magnetic" id={wrapId} data-d="card">
+        <span class="d-cta-halo" aria-hidden="true"></span>
+        <a class="d-cta" id={id} href={href} target="_blank" rel="noopener noreferrer" {...attrs}>
+            <span class="spin" aria-hidden="true"></span>
+            <span class="d-cta-core">
+                <span class="d-cta-shine" aria-hidden="true"></span>
+                <svg class="d-cta-bag" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 12.2a1 1 0 0 1-1 .8H7.2a1 1 0 0 1-1-.8z"/><path d="M9 10V6.5a3 3 0 0 1 6 0V10"/></svg>
+                <span class="d-cta-txt"><slot />{srLabel && <span class="sr-only">{` ${srLabel}`}</span>}</span>
+                <span class="d-cta-arrow" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg>
+                    <svg viewBox="0 0 24 24"><path d="M7 17L17 7M9 7h8v8"/></svg>
+                </span>
+            </span>
+            <span class="sr-only">(abre o site oficial da Azzaro em uma nova aba)</span>
+        </a>
+    </div>
+)}

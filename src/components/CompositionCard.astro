@@ -1,0 +1,35 @@
+---
+// Card de acorde da seção "Sua composição · três acordes" (dobra II, #wanted).
+// Uso:
+//   <CompositionCard number="01" tier="Saída" title="Frescor" highlight="cítrico">
+//       <Fragment slot="icon"><circle class="w-draw" pathLength="60" … /></Fragment>
+//       Texto do card…
+//   </CompositionCard>
+//
+// O slot "icon" recebe só os traços do SVG (viewBox 24×24); use class="w-draw" pathLength="60"
+// para a animação de desenho. As classes .w-card, .flashlight-card e data-w="card" são usadas
+// por site-renovado-azzaro/js/wanted.js e polish.js — não renomear.
+interface Props {
+    /** Ordem do acorde, ex.: "01". */
+    number: string;
+    /** Camada da pirâmide olfativa, ex.: "Saída", "Coração", "Fundo". */
+    tier: string;
+    /** Primeira parte do título, em texto normal. */
+    title: string;
+    /** Parte do título em itálico/destaque. */
+    highlight: string;
+}
+
+const { number, tier, title, highlight } = Astro.props;
+---
+<li class="w-card flashlight-card" data-w="card">
+    <div class="w-card-head">
+        <span class="w-card-ico"><svg class="svg-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <slot name="icon" />
+        </svg></span>
+        <span class="t-label w-card-tier"><b>{number}</b> {tier}</span>
+    </div>
+    <h3 class="w-card-title">{title} <em>{highlight}</em></h3>
+    <p><slot /></p>
+    <i class="w-card-bar" aria-hidden="true"></i>
+</li>
